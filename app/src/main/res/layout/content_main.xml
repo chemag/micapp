@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+        <TextView
+            android:id="@+id/textView2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minEms="15"
+            android:maxEms="15"
+            android:text="RMS value (dB)" />
+
+        <EditText
+            android:id="@+id/rmsVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minEms="10"
+            android:maxEms="10"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            android:id="@+id/textView4"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="4"
+            android:maxEms="4"
+            android:text="Min" />
+
+        <EditText
+            android:id="@+id/rmsMinVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="10"
+            android:maxEms="10"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            android:id="@+id/textView3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="4"
+            android:maxEms="4"
+            android:text="Max" />
+
+        <EditText
+            android:id="@+id/rmsMaxVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="10"
+            android:maxEms="10"
+            android:inputType="numberDecimal" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+
+
+        <TextView
+            android:id="@+id/textView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minEms="15"
+            android:maxEms="15"
+            android:text="Peak value (dB)" />
+
+        <EditText
+            android:id="@+id/peakVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:minEms="10"
+            android:maxEms="10"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="4"
+            android:maxEms="4"
+            android:text="Min" />
+
+        <EditText
+            android:id="@+id/peakMinVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="10"
+            android:maxEms="10"
+            android:inputType="numberDecimal" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="4"
+            android:maxEms="4"
+            android:text="Max" />
+
+        <EditText
+            android:id="@+id/peakMaxVal"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minEms="10"
+            android:maxEms="10"
+            android:inputType="numberDecimal" />
+
+    </LinearLayout>
+
+    <ToggleButton
+        android:id="@+id/button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:onClick="onClick"
+        android:text="Run" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="5dp"
+        android:baselineAligned="false"
+        android:orientation="vertical"
+        android:paddingHorizontal="20sp">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingHorizontal="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/editMic"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:clickable="false"
+                    android:duplicateParentState="false"
+                    android:ems="10" />
+            </LinearLayout>
+        </ScrollView>
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:clickable="false"
+            android:text="Microphone Info"
+            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
+
+    </LinearLayout>
+</LinearLayout>
