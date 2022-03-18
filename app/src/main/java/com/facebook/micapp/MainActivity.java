@@ -11,7 +11,9 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
+import android.provider.MediaStore;
 import android.util.Log;
 import android.util.Pair;
 import android.view.View;
@@ -20,10 +22,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.media.*;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -42,11 +50,18 @@ public class MainActivity extends AppCompatActivity {
     EditText mMinPeak;
     EditText mMinRms;
 
+    TextView mInfo;
+    CheckBox mRecordCheck;
+
     double mMaxPeakVal = -100;
     double mMaxRMSVal = -100;
     double mMinPeakVal = 0;
     double mMinRMSVal = 0;
 
+    AudioTrack mPlayer = null;
+    byte[] mSound = null;
+
+    boolean mRecord = true;
     private static final String ACTION_USB_PERMISSION =
             "com.android.example.USB_PERMISSION";
     private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
@@ -98,7 +113,8 @@ public class MainActivity extends AppCompatActivity {
         mMaxRms = findViewById(R.id.rmsMaxVal);
         mMinPeak = findViewById(R.id.peakMinVal);
         mMinRms = findViewById(R.id.rmsMinVal);
-        ((Button)findViewById(R.id.button)).setOnClickListener(this::onClick);
+        mInfo = (TextView) findViewById(R.id.editMic);
+        ((Button) findViewById(R.id.activeButton)).setOnClickListener(this::onClick);
         // make sure the right permissions are set
         String[] permissions = retrieveNotGrantedPermissions(this);
 
@@ -107,11 +123,17 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Request permissions: " + permissions);
             ActivityCompat.requestPermissions(this, permissions, REQUEST_ALL_PERMISSIONS);
         }
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-
-
-        Runnable checkTask = () -> { check(); };
+        Button play = (Button) findViewById(R.id.playSoundButton);
+        play.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                playSound();
+            }
+        });
+        mRecordCheck = (CheckBox) findViewById(R.id.recordCheck);
+        Runnable checkTask = () -> {
+            check();
+        };
 
         // start the thread
         Log.d(TAG, "Start check!");
@@ -120,8 +142,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
         return true;
     }
 
@@ -140,6 +160,121 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    void playSound_static() {
+        int usage = AudioAttributes.USAGE_VOICE_COMMUNICATION;
+        int type = AudioAttributes.CONTENT_TYPE_SPEECH;
+        int samplerate = 48000;
+        int buffersize = AudioTrack.getMinBufferSize(
+                samplerate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        if (mPlayer == null) {
+            InputStream is = this.getResources().openRawResource(R.raw.voices_48khz_s16pcm);
+            int size;
+            byte[] sound = null;
+            int read = 0;
+            try {
+                size = is.available();
+                sound = new byte[size];
+                read = is.read(sound);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            mPlayer =
+                    new AudioTrack.Builder()
+                            .setAudioAttributes(new AudioAttributes.Builder()
+                                    .setUsage(usage)
+                                    .setContentType(type)
+                                    .build())
+                            .setAudioFormat(new AudioFormat.Builder()
+                                    .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                    .setSampleRate(samplerate)
+                                    .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                                    .build())
+                            .setTransferMode(AudioTrack.MODE_STATIC)
+                            .setBufferSizeInBytes(read)
+                            .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+                            .build();
+            mPlayer.write(sound, 0, read);
+
+        }
+        mPlayer.stop();
+        mPlayer.setPlaybackHeadPosition(0);
+        mPlayer.play();
+    }
+
+    void playSound() {
+        int usage = AudioAttributes.USAGE_VOICE_COMMUNICATION;
+        int type = AudioAttributes.CONTENT_TYPE_SPEECH;
+        int samplerate = 48000;
+        int buffersize = AudioTrack.getMinBufferSize(
+                samplerate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
+        if (mSound == null) {
+            InputStream is = this.getResources().openRawResource(R.raw.voices_48khz_s16pcm);
+            int size;
+            int read = 0;
+            try {
+                size = is.available();
+                mSound = new byte[size];
+                read = is.read(mSound);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+
+                final AudioTrack player =
+                        new AudioTrack.Builder()
+                                .setAudioAttributes(new AudioAttributes.Builder()
+                                        .setUsage(usage)
+                                        .setContentType(type)
+                                        .build())
+                                .setAudioFormat(new AudioFormat.Builder()
+                                        .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                                        .setSampleRate(samplerate)
+                                        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                                        .build())
+                                .setTransferMode(AudioTrack.MODE_STREAM)
+                                .setBufferSizeInBytes(buffersize)
+                                .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
+                                .build();
+                int played = 0;
+                player.play();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        int contentType = -1;
+                        AudioAttributes ats = null;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                            ats = player.getAudioAttributes();
+
+                            contentType = ats.getContentType();
+
+                            int usage = ats.getUsage();
+                            int flags = ats.getFlags();
+                            mInfo.append("Player:\nusage: " + usage + "\nContent type = " + contentType + "\nflags: " + flags);
+                        }
+                    }
+                });
+
+                while (played < mSound.length) {
+                    int written = player.write(mSound, played, buffersize);
+                    if (written > 0) {
+                        played += written;
+                    } else {
+                        Log.d(TAG, "Failed to write to player: " + written);
+                        break;
+                    }
+                }
+
+
+                player.release();
+            }
+        });
+        t.start();
+
+
+    }
 
     void check() {
 
@@ -173,7 +308,7 @@ public class MainActivity extends AppCompatActivity {
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-
+        Log.d(TAG, "Open audio using VOICE_COMMUNICATION source");
         AudioRecord recorder = new AudioRecord.Builder()
                 .setAudioSource(MediaRecorder.AudioSource.VOICE_COMMUNICATION)
                 .setAudioFormat(new AudioFormat.Builder()
@@ -184,19 +319,33 @@ public class MainActivity extends AppCompatActivity {
                 .setBufferSizeInBytes(2 * AudioRecord.getMinBufferSize(480000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT))
                 .build();
 
-        TextView editText = (TextView)findViewById(R.id.editMic);
-
         float sampleRate = 48000;
-        final byte audioData[] = new byte[(int)(sampleRate * 2)];
-        short[] shorts = new short[(int)sampleRate];
+        final byte audioData[] = new byte[(int) (sampleRate * 2)];
+        short[] shorts = new short[(int) sampleRate];
 
         int previousVolume = aman.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
         aman.setStreamVolume(AudioManager.STREAM_VOICE_CALL, aman.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL), 0);
-        int now =  aman.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
-        Log.d(TAG, "PREV: " + previousVolume + ", NOW: " + now + ", mx = "+aman.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL) );
+        int now = aman.getStreamVolume(AudioManager.STREAM_VOICE_CALL);
+        Log.d(TAG, "PREV: " + previousVolume + ", NOW: " + now + ", mx = " + aman.getStreamMaxVolume(AudioManager.STREAM_VOICE_CALL));
         Log.d(TAG, "Fixed vol =  " + aman.isVolumeFixed());
 
-
+        BufferedOutputStream os = null;
+        if (mRecord) {
+            // open the record file path
+            File[] externalStorageVolumes =
+                    ContextCompat.getExternalFilesDirs(getApplicationContext(), null);
+            File primaryExternalStorage = externalStorageVolumes[0];
+            String filename = primaryExternalStorage + "/capture_48kHz.raw";
+            Log.d(TAG, "Record to \"" + filename + "\"");
+            try {
+                os = new BufferedOutputStream(new FileOutputStream(filename));
+            } catch (FileNotFoundException e) {
+                Log.e(TAG, "File not found for recording ", e);
+                return;
+            }
+            final BufferedOutputStream fos = os;
+        }
+        final BufferedOutputStream fos = os;
         Thread rec = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -229,7 +378,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             Log.d(TAG, "Set tring:  " + text);
-                            editText.setText(text);
+                            mInfo.setText(text);
                         }
                     });
                 } catch (IOException e) {
@@ -244,7 +393,7 @@ public class MainActivity extends AppCompatActivity {
                     double max = 0;
                     double min = 65000;
                     for (int i = 0; i < shorts.length; i++) {
-                        double norm = shorts[i]/Math.pow(2, 15);
+                        double norm = shorts[i] / Math.pow(2, 15);
                         sum += norm * norm;
                         if (norm > max) {
                             max = norm;
@@ -253,7 +402,7 @@ public class MainActivity extends AppCompatActivity {
                             min = norm;
                         }
                     }
-                    double val = sum / (double)shorts.length;
+                    double val = sum / (double) shorts.length;
                     double nval = val;
                     final double dB = Math.round(floatToDB(Math.sqrt(nval)));
                     final double peak_dB = Math.round(floatToDB(max));
@@ -272,10 +421,6 @@ public class MainActivity extends AppCompatActivity {
                         mMaxPeakVal = peak_dB;
                     }
 
-                    Log.d(TAG, "-----------");
-                    Log.d(TAG, "RMS = " + (dB) + " dB, average, min, max = " + mMinRMSVal +", "+mMaxRMSVal);
-                    Log.d(TAG, "Peak = " + (peak_dB) + " dB, min, max = " + mMinPeakVal +", "+mMaxPeakVal);
-
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -287,6 +432,13 @@ public class MainActivity extends AppCompatActivity {
                             mMinRms.setText(String.valueOf(mMinRMSVal));
                         }
                     });
+                    if (fos != null) {
+                        try {
+                            fos.write(audioData, 0, read_bytes);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
                 }
             }
         });
@@ -302,7 +454,14 @@ public class MainActivity extends AppCompatActivity {
 
         recorder.stop();
         recorder.release();
-
+        if (fos != null) {
+            try {
+                fos.flush();
+                fos.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 
@@ -312,7 +471,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     public double floatToDB(double val) {
-        if (val <=0)
+        if (val <= 0)
             return -100;
         return 20 * Math.log10(val);
     }
@@ -326,7 +485,9 @@ public class MainActivity extends AppCompatActivity {
             mMaxRMSVal = -100;
             mMinRMSVal = 0;
 
-            Runnable checkTask = () -> { check(); };
+            Runnable checkTask = () -> {
+                check();
+            };
 
             // start the thread
             Log.d(TAG, "Start check!");
@@ -337,10 +498,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    static String freqResponse( java.util.List<android.util.Pair<Float, Float>> response) {
+    static String freqResponse(java.util.List<android.util.Pair<Float, Float>> response) {
         StringBuilder bldr = new StringBuilder();
-        for (Pair<Float, Float> pair: response) {
-            bldr.append(String.format("%d Hz %.2f\n dB", (int)(pair.first.floatValue()), pair.second.doubleValue()));
+        for (Pair<Float, Float> pair : response) {
+            bldr.append(String.format("%d Hz %.2f\n dB", (int) (pair.first.floatValue()), pair.second.doubleValue()));
         }
 
         return bldr.toString();
@@ -374,18 +535,18 @@ public class MainActivity extends AppCompatActivity {
     public static final int DIRECTIONALITY_SUPER_CARDIOID = 5;
 
     static String directionalityToText(int directionality) {
-       switch (directionality) {
-           case MicrophoneInfo.DIRECTIONALITY_OMNI:
-               return "Omni";
-           case MicrophoneInfo.DIRECTIONALITY_BI_DIRECTIONAL:
-               return "Figure 8";
-           case MicrophoneInfo.DIRECTIONALITY_CARDIOID:
-               return "Cardioid";
-           case MicrophoneInfo.DIRECTIONALITY_HYPER_CARDIOID:
-               return "Hyper cardioid";
-           case MicrophoneInfo.DIRECTIONALITY_SUPER_CARDIOID:
-               return "Super cardioid";
-       }
-       return "Unknown";
+        switch (directionality) {
+            case MicrophoneInfo.DIRECTIONALITY_OMNI:
+                return "Omni";
+            case MicrophoneInfo.DIRECTIONALITY_BI_DIRECTIONAL:
+                return "Figure 8";
+            case MicrophoneInfo.DIRECTIONALITY_CARDIOID:
+                return "Cardioid";
+            case MicrophoneInfo.DIRECTIONALITY_HYPER_CARDIOID:
+                return "Hyper cardioid";
+            case MicrophoneInfo.DIRECTIONALITY_SUPER_CARDIOID:
+                return "Super cardioid";
+        }
+        return "Unknown";
     }
 }

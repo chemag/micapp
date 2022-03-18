@@ -130,13 +130,33 @@
 
     </LinearLayout>
 
-    <ToggleButton
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:checked="true"
-        android:onClick="onClick"
-        android:text="Run" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="horizontal">
+
+        <ToggleButton
+            android:id="@+id/activeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:onClick="onClick"
+            android:text="Run" />
+
+        <CheckBox
+            android:id="@+id/recordCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:text="Record" />
+
+        <Button
+            android:id="@+id/playSoundButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Play sound" />
+    </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -177,5 +197,20 @@
             android:text="Microphone Info"
             android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
 
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:orientation="horizontal">
+
+            <Spinner
+                android:id="@+id/spinner"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1" />
+
+        </LinearLayout>
+
     </LinearLayout>
+
 </LinearLayout>
