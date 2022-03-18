@@ -8,8 +8,9 @@ android {
 
     defaultConfig {
         applicationId "com.facebook.microphonecheck"
-        minSdkVersion 29
-        targetSdkVersion 31
+        minSdkVersion 28
+        //noinspection ExpiredTargetSdkVersion
+        targetSdkVersion 28
         versionCode 1
         versionName "1.0"
 
