@@ -3,11 +3,19 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
     android:orientation="vertical"
     app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
 
+    <EditText
+        android:id="@+id/textView9"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="false"
+        android:focusable="false"
+        android:text="Current input sound pressure (per second)"
+        android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -16,56 +24,20 @@
 
 
         <TextView
-            android:id="@+id/textView2"
-            android:layout_width="wrap_content"
+            android:id="@+id/splText"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:minEms="15"
-            android:maxEms="15"
-            android:text="RMS value (dB)" />
-
-        <EditText
-            android:id="@+id/rmsVal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minEms="10"
-            android:maxEms="10"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:id="@+id/textView4"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minEms="4"
+            android:layout_weight="8"
+            android:focusable="false"
             android:maxEms="4"
-            android:text="Min" />
+            android:minEms="4" />
 
-        <EditText
-            android:id="@+id/rmsMinVal"
+        <Button
+            android:id="@+id/resetSpl"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:minEms="10"
-            android:maxEms="10"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:id="@+id/textView3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minEms="4"
-            android:maxEms="4"
-            android:text="Max" />
-
-        <EditText
-            android:id="@+id/rmsMaxVal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minEms="10"
-            android:maxEms="10"
-            android:inputType="numberDecimal" />
+            android:text="Reset spl" />
 
     </LinearLayout>
 
@@ -73,143 +45,172 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
-
-
-
-        <TextView
-            android:id="@+id/textView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minEms="15"
-            android:maxEms="15"
-            android:text="Peak value (dB)" />
-
-        <EditText
-            android:id="@+id/peakVal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:minEms="10"
-            android:maxEms="10"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:id="@+id/textView6"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minEms="4"
-            android:maxEms="4"
-            android:text="Min" />
-
-        <EditText
-            android:id="@+id/peakMinVal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minEms="10"
-            android:maxEms="10"
-            android:inputType="numberDecimal" />
-
-        <TextView
-            android:id="@+id/textView5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minEms="4"
-            android:maxEms="4"
-            android:text="Max" />
-
-        <EditText
-            android:id="@+id/peakMaxVal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:minEms="10"
-            android:maxEms="10"
-            android:inputType="numberDecimal" />
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
-
-        <ToggleButton
-            android:id="@+id/activeButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="true"
-            android:onClick="onClick"
-            android:text="Run" />
-
-        <CheckBox
-            android:id="@+id/recordCheck"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="Record" />
 
         <Button
             android:id="@+id/playSoundButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:nextFocusRight="@id/recordCheck"
             android:text="Play sound" />
+
+        <CheckBox
+            android:id="@+id/recordCheck"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="false"
+            android:nextFocusRight="@id/activeButton"
+            android:text="Record" />
+
+        <ToggleButton
+            android:id="@+id/activeButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:checked="true"
+            android:nextFocusRight="@id/addAECButton"
+            android:text="Run" />
+
+        <ToggleButton
+            android:id="@+id/addAECButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:nextFocusRight="@id/addAGCButton"
+            android:textOff="No aec"
+            android:textOn="AEC is active"
+            app:cornerRadius="8dp" />
+
+        <ToggleButton
+            android:id="@+id/addAGCButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:nextFocusRight="@id/addNSButton"
+            android:textOff="No agc"
+            android:textOn="AGC is active"
+            app:cornerRadius="8dp" />
+
+        <ToggleButton
+            android:id="@+id/addNSButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:nextFocusRight="@id/inputSpinner"
+            android:textOff="No ns"
+            android:textOn="NS is active"
+            app:cornerRadius="8dp" />
     </LinearLayout>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_marginVertical="5dp"
         android:layout_marginStart="5dp"
+        android:layout_marginBottom="5dp"
         android:baselineAligned="false"
         android:orientation="vertical"
-        android:paddingHorizontal="20sp">
+        android:paddingHorizontal="5sp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:layout_weight="0"
+            android:gravity="fill_horizontal"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/na1"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName"
+                    android:text="Input source"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                <Spinner
+                    android:id="@+id/inputSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:nextFocusLeft="@id/addNSButton"
+                    android:nextFocusRight="@id/audioSourceTypeSpinner"
+                    android:nextFocusUp="@id/playSoundButton"
+                    android:nextFocusForward="@id/audioSourceTypeSpinner" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_margin="10dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <EditText
+                    android:id="@+id/na2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:ems="10"
+                    android:focusable="false"
+                    android:inputType="textPersonName"
+                    android:text="Audio source type"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+                <Spinner
+                    android:id="@+id/audioSourceTypeSpinner"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:nextFocusLeft="@id/inputSpinner"
+                    android:nextFocusUp="@id/inputSpinner" />
+            </LinearLayout>
+
+        </LinearLayout>
 
         <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp"
+            android:layout_weight="3"
             android:paddingHorizontal="20dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_margin="10dp"
                 android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/textView7"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:text="Info"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
                 <TextView
                     android:id="@+id/editMic"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:clickable="false"
                     android:duplicateParentState="false"
-                    android:ems="10" />
+                    android:ems="10"
+                    android:focusable="false" />
             </LinearLayout>
         </ScrollView>
-
-        <TextView
-            android:id="@+id/textView7"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:clickable="false"
-            android:text="Microphone Info"
-            android:textAppearance="@style/TextAppearance.AppCompat.Body1" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:orientation="horizontal">
-
-            <Spinner
-                android:id="@+id/spinner"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1" />
-
-        </LinearLayout>
 
     </LinearLayout>
 
