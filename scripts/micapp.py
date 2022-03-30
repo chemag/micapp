@@ -1,12 +1,27 @@
 #!/usr/bin/env python3
 
+import argparse
 import os
 import subprocess
-import argparse
+import sys
 import time
+
 APPNAME_MAIN = 'com.facebook.micapp'
 DUT_FILE_PATH = '/storage/emulated/0/Android/data/com.facebook.micapp/files/'
 debug = False
+
+
+FUNC_CHOICES = {
+    'help': 'show help options',
+    'info': 'provide audio uplink',
+}
+
+default_values = {
+    'debug': 0,
+    'func': 'help',
+}
+
+__version__ = '0.1'
 
 
 # returns info (device model and serial number) about the device where the
@@ -132,15 +147,53 @@ def pull_info(serial, name):
         print(f'Data also available in {filename}')
 
 
-def main():
-    parser = argparse.ArgumentParser(description='')
-    parser.add_argument('-s', '--serial', default=None)
-    parser.add_argument('-d', '--debug', action='store_true')
+def get_options(argv):
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        '-v', '--version', action='store_true',
+        dest='version', default=False,
+        help='Print version',)
+    parser.add_argument(
+        '-d', '--debug', action='count',
+        dest='debug', default=default_values['debug'],
+        help='Increase verbosity (use multiple times for more)',)
+    parser.add_argument(
+        '--quiet', action='store_const',
+        dest='debug', const=-1,
+        help='Zero verbosity',)
+    parser.add_argument(
+        '-s', '--serial', help='Android device serial number')
+    parser.add_argument(
+        'func', type=str, nargs='?',
+        default=default_values['func'],
+        choices=FUNC_CHOICES.keys(),
+        metavar='%s' % (' | '.join("{}: {}".format(k, v) for k, v in
+                                   FUNC_CHOICES.items())),
+        help='function arg',)
 
-    options = parser.parse_args()
+    options = parser.parse_args(argv[1:])
+
+    # implement help
+    if options.func == 'help':
+        parser.print_help()
+        sys.exit(0)
+
+    if options.serial is None and 'ANDROID_SERIAL' in os.environ:
+        # read serial number from ANDROID_SERIAL env variable
+        options.serial = os.environ['ANDROID_SERIAL']
+
+    return options
+
+
+def main(argv):
+    options = get_options(argv)
+    if options.version:
+        print('version: %s' % __version__)
+        sys.exit(0)
 
     global debug
     debug = options.debug
+
     # get model and serial number
     model, serial = get_device_info(options.serial, False)
     if type(model) is dict:
@@ -148,8 +201,10 @@ def main():
             model = model.get('model')
         else:
             model = list(model.values())[0]
-    pull_info(options.serial, model)
+
+    if options.func == 'info':
+        pull_info(options.serial, model)
 
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv)
