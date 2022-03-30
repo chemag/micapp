@@ -99,3 +99,18 @@ Data also available in micapp_info_device_name.txt
 ```
 
 Note that the output contains 4 different Sections.
+
+
+# 4. Operation: Mic Recording
+
+Run the info command, and get the list of `audio_device_info` items under
+`audio_device_info_array`. Select 1 or more mics. E.g. in our case, we will
+capture from both `audio_device_info.id` 8 and 22.
+
+```
+$ ./scripts/micapp.py record --inputids 8,22  -t 5
+...
+$ ls capture*
+capture_48kHz_....builtin_mic.8.wav
+capture_48kHz_USB-Audio_-_HD_Web_Camera.usb_device.22.wav
+```
