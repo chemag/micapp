@@ -14,6 +14,7 @@ import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import android.os.Handler;
 import android.util.Log;
@@ -30,7 +31,15 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.ToggleButton;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Properties;
+import java.util.Set;
+import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
     public final static String TAG = "mic";
@@ -94,9 +103,96 @@ public class MainActivity extends AppCompatActivity {
         return nonGrantedPerms.toArray(new String[nonGrantedPerms.size()]);
     }
 
+    private void getInfo() {
+        if (mFx == null) {
+            return;
+        }
+        File[] externalStorageVolumes =
+                ContextCompat.getExternalFilesDirs(getApplicationContext(), null);
+        File primaryExternalStorage = externalStorageVolumes[0];
+
+        Log.d(TAG, "primaryExternalStorage: "+ primaryExternalStorage.getAbsolutePath());
+        String filename = primaryExternalStorage.getAbsolutePath() + "/micapp_info.txt";
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(filename);
+            writer.write("Micapp");
+            writer.write("\n****\n");
+            writer.write("\nInputs:\n");
+            writer.write(Utils.getAllInputInfo(this));
+            writer.write("\n----\n");
+
+            writer.write("\nMicrophones:\n");
+            writer.write(Utils.getAllMicrophonesInfo(this));
+            writer.write("\n----\n");
+
+            writer.write("\nEffects:");
+            if (mFx.isAecAvailable()) {
+                writer.write("\n+ AEC is available");
+            } else {
+                writer.write("\n- No AEC available");
+            }
+            if (mFx.isAgcAvailable()) {
+                writer.write("\n+ AGC is available");
+            } else {
+                writer.write("\n- No AGC available");
+            }
+            if (mFx.isNsAvailable()) {
+                writer.write("\n+ NS is available");
+            } else {
+                writer.write("\n- No NS available");
+            }
+            writer.write("\n----\n");
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "***\n*** On create\n***\n");
+
+
+        // make sure the right permissions are set
+        String[] permissions = retrieveNotGrantedPermissions(this);
+        mAudioPlayer = new Player(this);
+        if (permissions != null && permissions.length > 0) {
+            int REQUEST_ALL_PERMISSIONS = 0x4562;
+            Log.d(TAG, "Request permissions: " + permissions);
+            ActivityCompat.requestPermissions(this, permissions, REQUEST_ALL_PERMISSIONS);
+        }
+
+        mFx = new AudioEffects();
+        Bundle extras = this.getIntent().getExtras();
+
+        if (extras != null) {
+            if (extras.containsKey("nogui")) {
+                handler.postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        getInfo();
+                        Log.d(TAG, "No gui, closing down");
+                        System.exit(0);
+                    }
+                }, 100);
+
+            }
+            return;
+        }
+
         setContentView(R.layout.activity_main);
 
         mSpltText = findViewById(R.id.splText);
@@ -115,17 +211,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // make sure the right permissions are set
-        String[] permissions = retrieveNotGrantedPermissions(this);
-        mAudioPlayer = new Player(this);
-        if (permissions != null && permissions.length > 0) {
-            int REQUEST_ALL_PERMISSIONS = 0x4562;
-            Log.d(TAG, "Request permissions: " + permissions);
-            ActivityCompat.requestPermissions(this, permissions, REQUEST_ALL_PERMISSIONS);
-        }
         Button play = (Button) findViewById(R.id.playSoundButton);
         play.setOnClickListener(view -> mAudioPlayer.playSound());
-        mFx = new AudioEffects();
+
         ArrayAdapter<String> aa = new ArrayAdapter(this,  android.R.layout.simple_spinner_item);
         aa.addAll(Utils.getDevices(this));
         mInputSpinner = (Spinner)findViewById(R.id.inputSpinner);

@@ -2,14 +2,19 @@ package com.facebook.micapp;
 
 import android.Manifest;
 import android.content.Context;
+import android.media.AudioDescriptor;
 import android.media.AudioDeviceInfo;
+import android.media.AudioFormat;
 import android.media.AudioManager;
+import android.media.AudioProfile;
 import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.media.MicrophoneInfo;
 import android.util.Log;
 import android.util.Pair;
 
+import java.io.IOException;
+import java.util.List;
 import java.util.Vector;
 
 import androidx.annotation.RequiresPermission;
@@ -219,6 +224,94 @@ public class Utils {
         }
 
         return ret;
+    }
+
+    public static String getAllInputInfo(Context context) {
+        StringBuilder builder =  new StringBuilder();
+        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
+        builder.append("Number of inputs: " + adevs.length);
+        builder.append("\n----\n");
+        for (AudioDeviceInfo info : adevs) {
+            builder.append("\n" + info.getProductName());
+            builder.append("\nAddress:" + info.getAddress());
+            builder.append("\nType: " + Utils.audioDeviceTypeToString( info.getType()));
+            builder.append(" (" + info.getType() + ")");
+            builder.append("\nid: " + info.getId());
+            if (android.os.Build.VERSION.SDK_INT >= 31) {
+                List<AudioDescriptor> descs = info.getAudioDescriptors();
+                for (AudioDescriptor desc: descs) {
+                    builder.append("\n" + desc.getDescriptor());
+                }
+            }
+            int[] channels = info.getChannelCounts();
+
+            for (int channel : channels) {
+                builder.append("\n-- ch.count: " + channel);
+            }
+            int[] rates = info.getSampleRates();
+            for (int rate : rates) {
+                builder.append("\n-- ch.rate: " + rate);
+            }
+            builder.append("\n----\n");
+        }
+
+        return builder.toString();
+    }
+
+    public static String getAllMicrophonesInfo(Context context) {
+        StringBuilder builder =  new StringBuilder();
+        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+
+        try {
+            List<MicrophoneInfo> microphones = aman.getMicrophones();
+            builder.append("Number of microphones: " + microphones.size());
+            builder.append("\n----\n");
+            for (MicrophoneInfo info : microphones) {
+                builder.append("\n" + info.getDescription());
+                builder.append("\nAddress:" + info.getAddress());
+                builder.append("\nType: " + Utils.audioDeviceTypeToString( info.getType()));
+                builder.append(" (" + info.getType() + ")");
+                builder.append("\nid: " + info.getId());
+
+                builder.append("\nPath:" + info.getAddress());
+                builder.append("\nDesc:" + info.getDescription());
+                builder.append("\nDirectiviy:" + Utils.directionalityToText(info.getDirectionality()));
+                if (info.getSensitivity() == MicrophoneInfo.SENSITIVITY_UNKNOWN) {
+                    builder.append("\nSensitivity (94dB 1kHz): not specified");
+                } else {
+                    builder.append("\nSensitivity (94dB 1kHz):" + info.getSensitivity());
+                }
+                builder.append("\nMax spl:" + info.getMaxSpl());
+                builder.append("\nMin spl:" + info.getMinSpl());
+                List<Pair<Float, Float>> freqs = info.getFrequencyResponse();
+                builder.append("\nFrequency response:");
+                for (Pair<Float, Float> freq: freqs) {
+                    builder.append(String.format("\n%5.0fHz   % 5.1f dB", freq.first, freq.second));
+                }
+                builder.append("\n----\n");
+            }
+
+            return builder.toString();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+
+    public static AudioDeviceInfo getMatchingDeviceInfo(String id, Context context) {
+        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
+
+        for (AudioDeviceInfo info : adevs) {
+            String tmp = info.getProductName().toString() + "." + Utils.audioDeviceTypeToString( info.getType());
+            if (tmp.equals(id)) {
+                return info;
+            }
+        }
+
+        return null;
     }
 
 }
