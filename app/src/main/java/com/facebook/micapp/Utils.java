@@ -68,7 +68,7 @@ public class Utils {
      */
     public static final int DIRECTIONALITY_SUPER_CARDIOID = 5;
 
-    public static String directionalityToText(int directionality) {
+    public static String microphoneInfoDirectionalityToString(int directionality) {
         switch (directionality) {
             case MicrophoneInfo.DIRECTIONALITY_OMNI:
                 return "Omni";
@@ -85,24 +85,24 @@ public class Utils {
     }
 
     static Vector<String> getDevices(Context context) {
-        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
+        final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] audio_device_info_array = audio_manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
         Vector<String> names = new Vector<>();
         names.add("default");
-        for (AudioDeviceInfo info : adevs) {
-            Log.d(TAG, "product_name: " + info.getProductName());
-            int[] channels = info.getChannelCounts();
+        for (AudioDeviceInfo audio_device_info : audio_device_info_array) {
+            Log.d(TAG, "product_name: " + audio_device_info.getProductName());
+            int[] channels = audio_device_info.getChannelCounts();
 
-            Log.d(TAG, "type: " + info.getType());
-            Log.d(TAG, "id: " + info.getId());
+            Log.d(TAG, "type: " + audio_device_info.getType());
+            Log.d(TAG, "id: " + audio_device_info.getId());
             for (int channel : channels) {
                 Log.d(TAG, "-- ch.count: " + channel);
             }
-            int[] rates = info.getSampleRates();
+            int[] rates = audio_device_info.getSampleRates();
             for (int rate : rates) {
                 Log.d(TAG, "-- ch.rate: " + rate);
             }
-            names.add(info.getProductName().toString() + "." + audioDeviceTypeToString(info.getType()));
+            names.add(audio_device_info.getProductName().toString() + "." + audioDeviceTypeToString(audio_device_info.getType()));
         }
 
         return names;
@@ -148,7 +148,7 @@ public class Utils {
     }
 
 
-    public static String locationToString(int location) {
+    public static String microphoneInfoLocationToString(int location) {
         switch (location) {
             case MicrophoneInfo.LOCATION_UNKNOWN:
                 return "unknown";
@@ -160,6 +160,72 @@ public class Utils {
                 return "peripheral";
             default:
                 return location  + " is no valid location";
+        }
+    }
+
+
+    public static String audioFormatEncodingToString(int encoding) {
+        switch (encoding) {
+            case AudioFormat.ENCODING_AAC_ELD:
+                return "aac_eld";
+            case AudioFormat.ENCODING_AAC_HE_V1:
+                return "aac_he_v1";
+            case AudioFormat.ENCODING_AAC_HE_V2:
+                return "aac_he_v2";
+            case AudioFormat.ENCODING_AAC_LC:
+                return "aac_lc";
+            case AudioFormat.ENCODING_AAC_XHE:
+                return "aac_xhe";
+            case AudioFormat.ENCODING_AC3:
+                return "ac3";
+            case AudioFormat.ENCODING_AC4:
+                return "ac4";
+            case AudioFormat.ENCODING_DEFAULT:
+                return "default";
+            case AudioFormat.ENCODING_DOLBY_MAT:
+                return "dolby_mat";
+            case AudioFormat.ENCODING_DOLBY_TRUEHD:
+                return "dolby_truehd";
+            case AudioFormat.ENCODING_DRA:
+                return "dra";
+            case AudioFormat.ENCODING_DTS:
+                return "dts";
+            case AudioFormat.ENCODING_DTS_HD:
+                return "dts_hd";
+            case AudioFormat.ENCODING_DTS_UHD:
+                return "dts_uhd";
+            case AudioFormat.ENCODING_E_AC3:
+                return "e_ac3";
+            case AudioFormat.ENCODING_E_AC3_JOC:
+                return "e_ac3_joc";
+            case AudioFormat.ENCODING_IEC61937:
+                return "iec61937";
+            case AudioFormat.ENCODING_INVALID:
+                return "invalid";
+            case AudioFormat.ENCODING_MP3:
+                return "mp3";
+            case AudioFormat.ENCODING_MPEGH_BL_L3:
+                return "mpegh_bl_l3";
+            case AudioFormat.ENCODING_MPEGH_BL_L4:
+                return "mpegh_bl_l4";
+            case AudioFormat.ENCODING_MPEGH_LC_L3:
+                return "mpeg_lc_l3";
+            case AudioFormat.ENCODING_MPEGH_LC_L4:
+                return "mpeg_lc_l4";
+            case AudioFormat.ENCODING_OPUS:
+                return "opus";
+            case AudioFormat.ENCODING_PCM_16BIT:
+                return "pcm_16bit";
+            case AudioFormat.ENCODING_PCM_24BIT_PACKED:
+                return "pcm_24bit_packed";
+            case AudioFormat.ENCODING_PCM_32BIT:
+                return "pcm_32bit";
+            case AudioFormat.ENCODING_PCM_8BIT:
+                return "pcm_8bit";
+            case AudioFormat.ENCODING_PCM_FLOAT:
+                return "pcm_float";
+            default:
+                return encoding  + " is no valid encoding";
         }
     }
 
@@ -242,35 +308,80 @@ public class Utils {
         return ret;
     }
 
-    public static String getAllInputInfo(Context context) {
+    public static String getAllAudioDeviceInfo(Context context) {
         StringBuilder str =  new StringBuilder();
-        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
-        str.append("Number of inputs: " + adevs.length);
-        str.append("\n----\n");
-        for (AudioDeviceInfo info : adevs) {
-            str.append("\n" + info.getProductName());
-            str.append("\nAddress:" + info.getAddress());
-            str.append("\nType: " + Utils.audioDeviceTypeToString( info.getType()));
-            str.append(" (" + info.getType() + ")");
-            str.append("\nid: " + info.getId());
+        final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] audio_device_info_array = audio_manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
+        str.append("audio_device_info_array {\n");
+        str.append("  size: " + audio_device_info_array.length + "\n");
+        for (AudioDeviceInfo audio_device_info : audio_device_info_array) {
+            str.append("  audio_device_info {\n");
+            str.append("    address: \"" + audio_device_info.getAddress() + "\"\n");
             if (android.os.Build.VERSION.SDK_INT >= 31) {
-                List<AudioDescriptor> descs = info.getAudioDescriptors();
-                for (AudioDescriptor desc: descs) {
-                    str.append("\n" + desc.getDescriptor());
+                List<AudioDescriptor> audio_descriptors = audio_device_info.getAudioDescriptors();
+                for (AudioDescriptor audio_descriptor: audio_descriptors) {
+                    str.append("    audio_descriptor {\n");
+                    str.append("      descriptor: \"" + audio_descriptor.getDescriptor() + "\"\n");
+                    str.append("      encapsulation_type: " + audio_descriptor.getEncapsulationType() + "\n");
+                    str.append("      standard: " + audio_descriptor.getStandard() + "\n");
+                    str.append("      hash_code: " + audio_descriptor.hashCode() + "\n");
+                    str.append("      string: \"" + audio_descriptor.toString() + "\"\n");
+                    str.append("    }\n");
+                }
+                List<AudioProfile> audio_profiles = audio_device_info.getAudioProfiles();
+                for (AudioProfile audio_profile: audio_profiles) {
+                    str.append("    audio_profile {\n");
+                    for (int channel_index_mask: audio_profile.getChannelIndexMasks()) {
+                        str.append("      channel_index_mask: " + channel_index_mask + "\n");
+                    }
+                    for (int channel_mask: audio_profile.getChannelMasks()) {
+                        str.append("      channel_mask: " + channel_mask + "\n");
+                    }
+                    str.append("      format: " + audio_profile.getFormat() + "\n");
+                    str.append("      encapsulation_type: " + audio_profile.getEncapsulationType() + "\n");
+                    str.append("      format: " + audio_profile.getFormat() + "\n");
+                    for (int sample_rate: audio_profile.getSampleRates()) {
+                        str.append("      sample_rate: " + sample_rate + "\n");
+                    }
+                    str.append("      hash_code: " + audio_profile.hashCode() + "\n");
+                    str.append("      string: \"" + audio_profile.toString() + "\"\n");
+                    str.append("    }\n");
                 }
             }
-            int[] channels = info.getChannelCounts();
-
-            for (int channel : channels) {
-                str.append("\n-- ch.count: " + channel);
+            for (int channel_count: audio_device_info.getChannelCounts()) {
+                str.append("    channel_count: " + channel_count + "\n");
             }
-            int[] rates = info.getSampleRates();
-            for (int rate : rates) {
-                str.append("\n-- ch.rate: " + rate);
+            for (int channel_index_mask: audio_device_info.getChannelIndexMasks()) {
+                str.append("    channel_index_mask: " + channel_index_mask + "\n");
             }
-            str.append("\n----\n");
+            for (int channel_mask: audio_device_info.getChannelMasks()) {
+                str.append("    channel_mask: " + channel_mask + "\n");
+            }
+            if (android.os.Build.VERSION.SDK_INT >= 30) {
+                for (int encapsulation_metadata_type: audio_device_info.getEncapsulationMetadataTypes()) {
+                    str.append("    encapsulation_metadata_type: " + encapsulation_metadata_type + "\n");
+                }
+                for (int encapsulation_mode: audio_device_info.getEncapsulationModes()) {
+                    str.append("    encapsulation_mode: " + encapsulation_mode + "\n");
+                }
+            }
+            for (int encoding: audio_device_info.getEncodings()) {
+                str.append("    encoding: " + encoding + "\n");
+                str.append("    encoding_str: \"" + Utils.audioFormatEncodingToString(encoding) + "\"\n");
+            }
+            str.append("    id: " + audio_device_info.getId() + "\n");
+            str.append("    product_name: \"" + audio_device_info.getProductName() + "\"\n");
+            for (int sample_rate: audio_device_info.getSampleRates()) {
+                str.append("    sample_rate: " + sample_rate + "\n");
+            }
+            str.append("    type: " + audio_device_info.getType() + "\n");
+            str.append("    type_str: \"" + Utils.audioDeviceTypeToString(audio_device_info.getType()) + "\"\n");
+            str.append("    hash_code: " + audio_device_info.hashCode() + "\n");
+            str.append("    is_sink: " + audio_device_info.isSink() + "\n");
+            str.append("    is_source: " + audio_device_info.isSource() + "\n");
+            str.append("  }\n");
         }
+        str.append("}\n");
 
         return str.toString();
     }
@@ -281,7 +392,7 @@ public class Utils {
 
         try {
             List<MicrophoneInfo> microphones = audio_manager.getMicrophones();
-            str.append("microphones {\n");
+            str.append("microphone_info_array {\n");
             str.append("  size: " + microphones.size() + "\n");
             for (MicrophoneInfo microphone_info : microphones) {
                 str.append("  microphone_info {\n");
@@ -297,7 +408,7 @@ public class Utils {
                 str.append("    }\n");
                 str.append("    description: \"" + microphone_info.getDescription() + "\"\n");
                 str.append("    directionality: " + microphone_info.getDirectionality() + "\n");
-                str.append("    directionality_str: \"" + Utils.directionalityToText(microphone_info.getDirectionality()) + "\"\n");
+                str.append("    directionality_str: \"" + Utils.microphoneInfoDirectionalityToString(microphone_info.getDirectionality()) + "\"\n");
                 str.append("    frequency_responses {\n");
                 List<Pair<Float, Float>> frequency_responses = microphone_info.getFrequencyResponse();
                 for (Pair<Float, Float> frequency_response: frequency_responses) {
@@ -311,7 +422,7 @@ public class Utils {
                 str.append("    id: " + microphone_info.getId() + "\n");
                 str.append("    index_in_the_group: " + microphone_info.getIndexInTheGroup() + "\n");
                 str.append("    location: " + microphone_info.getLocation() + "\n");
-                str.append("    location_str: \"" + Utils.locationToString(microphone_info.getLocation()) + "\"\n");
+                str.append("    location_str: \"" + Utils.microphoneInfoLocationToString(microphone_info.getLocation()) + "\"\n");
                 str.append("    max_spl_1000hz_db: " + microphone_info.getMaxSpl() + "\n");
                 str.append("    min_spl_1000hz_db: " + microphone_info.getMinSpl() + "\n");
                 MicrophoneInfo.Coordinate3F orientation = microphone_info.getOrientation();
@@ -355,13 +466,13 @@ public class Utils {
 
 
     public static AudioDeviceInfo getMatchingDeviceInfo(String id, Context context) {
-        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
+        final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] audio_device_info_array = audio_manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
 
-        for (AudioDeviceInfo info : adevs) {
-            String tmp = info.getProductName().toString() + "." + Utils.audioDeviceTypeToString( info.getType());
+        for (AudioDeviceInfo audio_device_info : audio_device_info_array) {
+            String tmp = audio_device_info.getProductName().toString() + "." + Utils.audioDeviceTypeToString( audio_device_info.getType());
             if (tmp.equals(id)) {
-                return info;
+                return audio_device_info;
             }
         }
 

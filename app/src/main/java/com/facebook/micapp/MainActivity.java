@@ -116,12 +116,8 @@ public class MainActivity extends AppCompatActivity {
         FileWriter writer = null;
         try {
             writer = new FileWriter(filename);
-            writer.write("Micapp");
-            writer.write("\n****\n");
-            writer.write("\nInputs:\n");
-            writer.write(Utils.getAllInputInfo(this));
-            writer.write("\n----\n");
-
+            writer.write("micapp\n\n");
+            writer.write(Utils.getAllAudioDeviceInfo(this));
             writer.write(Utils.getAllMicrophoneInfo(this));
 
             writer.write("\nEffects:");

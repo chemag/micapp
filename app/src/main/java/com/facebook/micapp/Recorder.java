@@ -134,7 +134,7 @@ public class Recorder {
                                 Log.d(TAG, "Sens: " + mic.getSensitivity());
                                 strBuilder.append("Path:" + mic.getAddress());
                                 strBuilder.append("\nDesc:" + mic.getDescription());
-                                strBuilder.append("\nDirectiviy:" + Utils.directionalityToText(mic.getDirectionality()));
+                                strBuilder.append("\nDirectiviy:" + Utils.microphoneInfoDirectionalityToString(mic.getDirectionality()));
                                 strBuilder.append("\nSensitivity:" + mic.getSensitivity());
                                 strBuilder.append("\nMax spl:" + mic.getMaxSpl());
                                 strBuilder.append("\nMin spl:" + mic.getMaxSpl());
