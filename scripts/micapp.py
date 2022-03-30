@@ -65,7 +65,7 @@ def run_cmd(cmd, debug=0):
     try:
         if debug > 0:
             print(cmd, sep=' ')
-        process = subprocess.Popen(cmd, shell=True,
+        process = subprocess.Popen(cmd, shell=True,  # noqa: P204
                                    stdout=subprocess.PIPE,
                                    stderr=subprocess.PIPE)
         stdout, stderr = process.communicate()
@@ -104,7 +104,8 @@ def pull_info(serial, name):
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
     adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.txt'
-    adb_cmd = f'adb -s {serial} shell  am start -e nogui 1 -n {APPNAME_MAIN}/.MainActivity'
+    adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 '
+               f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     wait_for_exit(serial)
 
