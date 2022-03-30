@@ -141,9 +141,8 @@ def pull_info(serial, name, debug=0):
         run_cmd(adb_cmd, debug)
         with open(filename, "r") as fl:
             print(f'{fl.read()}')
-
-        print('\n__________________\n')
-        print(f'Data also available in {filename}')
+        if debug > 0:
+            print(f'file output: {filename}')
 
 
 def get_options(argv):
