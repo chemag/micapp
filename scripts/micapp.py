@@ -95,7 +95,7 @@ def run_cmd(cmd, debug=0):
 
 
 def wait_for_exit(serial):
-    adb_cmd = f'adb -s {serial} shell pidof {APPNAME_MAIN}'    
+    adb_cmd = f'adb -s {serial} shell pidof {APPNAME_MAIN}'
     pid = -1
     current = 1
     while (current != -1):
@@ -142,7 +142,7 @@ def pull_info(serial, name, debug=0):
         filename = f'{os. path. splitext(base_file_name)[0]}_{name}.txt'
         adb_cmd = f'adb -s {serial} pull {file.strip()} {filename}'
         run_cmd(adb_cmd, debug)
-        with open(filename, "r") as fl:
+        with open(filename, 'r') as fl:
             print(f'{fl.read()}')
         if debug > 0:
             print(f'file output: {filename}')
@@ -150,15 +150,14 @@ def pull_info(serial, name, debug=0):
         print(f'Data also available in {filename}')
 
 
-
-
 def record(serial, name, source=None, ids=None, timesec=10.0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
     adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.raw'
-    adb_cmd = f'adb -s {serial} shell  am start -e rec 1 ' \
-              f'{build_args(source, ids, timesec)} -n {APPNAME_MAIN}/.MainActivity'
+    adb_cmd = (f'adb -s {serial} shell  am start -e rec 1 '
+               f'{build_args(source, ids, timesec)} '
+               f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     time.sleep(1)
     wait_for_exit(serial)
@@ -171,7 +170,7 @@ def record(serial, name, source=None, ids=None, timesec=10.0):
 
     adb_cmd = f'adb -s {serial} shell ls {DUT_FILE_PATH}*.raw'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
-    output_files = re.split("[ \n]", stdout)
+    output_files = re.split('[ \n]', stdout)
 
     if len(output_files) == 0:
         exit(0)
@@ -189,33 +188,34 @@ def record(serial, name, source=None, ids=None, timesec=10.0):
         print(f'\n*** convert {base_file_name} ***\n')
         # convert to wav, currently only 48k
         print(f'Open: {base_file_name} as raw file')
-        audio = sf.SoundFile(base_file_name, 'r', format='RAW', samplerate=48000,
-                         channels=1, subtype='PCM_16', endian='FILE')
+        audio = sf.SoundFile(base_file_name, 'r', format='RAW',
+                             samplerate=48000, channels=1, subtype='PCM_16',
+                             endian='FILE')
         pcmname = f'{os.path.splitext(base_file_name)[0]}.wav'
         print(f'Convert {base_file_name} to wav: {pcmname}')
         wav = sf.SoundFile(pcmname, 'w', format='WAV', samplerate=48000,
-                         channels=1, subtype='PCM_16', endian='FILE')
-        print("Read and write");
-        wav.write(audio.read());
+                           channels=1, subtype='PCM_16', endian='FILE')
+        print('Read and write')
+        wav.write(audio.read())
         wav.close()
         audio.close()
         audiofiles.append(pcmname)
         os.remove(base_file_name)
-
 
     for name in audiofiles:
         print(f'{name}')
 
 
 def build_args(audiosource, inputids, timesec):
-    ret = ""
+    ret = ''
     if not isinstance(audiosource, type(None)):
-        ret = f"{ret} -e audiosource {audiosource} "
+        ret = f'{ret} -e audiosource {audiosource} '
     if not isinstance(inputids, type(None)):
-        ret = f"{ret} -e inputid {inputids} "
+        ret = f'{ret} -e inputid {inputids} '
     if not isinstance(timesec, type(None)):
-        ret = f"{ret} -e timesec {timesec} "    
+        ret = f'{ret} -e timesec {timesec} '
     return ret
+
 
 def get_options(argv):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -237,7 +237,7 @@ def get_options(argv):
         'func', type=str, nargs='?',
         default=default_values['func'],
         choices=FUNC_CHOICES.keys(),
-        metavar='%s' % (' | '.join("{}: {}".format(k, v) for k, v in
+        metavar='%s' % (' | '.join('{}: {}'.format(k, v) for k, v in
                                    FUNC_CHOICES.items())),
         help='function arg',)
 
@@ -247,7 +247,6 @@ def get_options(argv):
         '--inputids', default=None)
     parser.add_argument(
         '-t', '--timesec', type=float, default=10.0)
-
 
     options = parser.parse_args(argv[1:])
 
@@ -261,6 +260,7 @@ def get_options(argv):
         options.serial = os.environ['ANDROID_SERIAL']
 
     return options
+
 
 def main(argv):
     options = get_options(argv)
@@ -281,7 +281,8 @@ def main(argv):
     if options.func == 'info':
         pull_info(options.serial, model, options.debug)
     if options.func == 'record':
-        record(options.serial, model, options.audiosource, options.inputids, options.timesec)
+        record(options.serial, model, options.audiosource, options.inputids,
+               options.timesec)
     else:
         pull_info(options.serial, model)
 
