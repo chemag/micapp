@@ -1,15 +1,9 @@
 package com.facebook.micapp;
 
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.media.MediaRecorder;
-import android.media.audiofx.AcousticEchoCanceler;
-import android.media.audiofx.AudioEffect;
-import android.media.audiofx.AutomaticGainControl;
-import android.media.audiofx.NoiseSuppressor;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -33,12 +27,9 @@ import android.widget.ToggleButton;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Properties;
-import java.util.Set;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
@@ -63,21 +54,6 @@ public class MainActivity extends AppCompatActivity {
     boolean mRecord = true;
 
     Handler handler = new Handler();
-    private static final String ACTION_USB_PERMISSION =
-            "com.android.example.USB_PERMISSION";
-    private final BroadcastReceiver usbReceiver = new BroadcastReceiver() {
-
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (ACTION_USB_PERMISSION.equals(action)) {
-                synchronized (this) {
-                    //UsbDevice device = (UsbDevice)intent.getParcelableExtra(UsbManager.EXTRA_DEVICE);
-
-
-                }
-            }
-        }
-    };
 
     public static String[] retrieveNotGrantedPermissions(Context context) {
         ArrayList<String> nonGrantedPerms = new ArrayList<>();
@@ -133,6 +109,30 @@ public class MainActivity extends AppCompatActivity {
                 }
             }
         }
+    }
+
+
+    public void record(int audioSource, int[] inputIds, float secs) {
+        mInfo.append("Start record");
+        mInfo.append("\nAudio source: "+ audioSource + " for " + secs + " secs");
+        Vector<String> inputs = Utils.lookupIdsStrings(inputIds, this);
+        Vector<Recorder> recorders = new Vector<>();
+        for (String input: inputs) {
+            Log.d(TAG, "Start a new recorder:" + input);
+            final Recorder rec = new Recorder(this);
+            recorders.add(rec);
+            (new Thread(() -> rec.checkAndRecord(audioSource, input, true))).start();
+        }
+
+        try {
+            Thread.sleep((long)(secs * 1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+        for (Recorder rec: recorders) {
+            rec.stopRecording();
+        }
 
     }
 
@@ -166,6 +166,44 @@ public class MainActivity extends AppCompatActivity {
                 }, 100);
 
             }
+
+            if (extras.containsKey("rec")) {
+                handler.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        Log.d(TAG, "cli recording");
+                        int[] ids = null;
+                        int audioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
+                        float recSec = 10.0f;
+                        if (extras.containsKey("inputid")) {
+                            String[] splits = extras.getString("inputid").split("[,]");
+                            ids = new int[splits.length];
+                            for (int i = 0; i < splits.length; i++){
+                                ids[i] = Integer.valueOf(splits[i]);
+                            }
+                        }
+
+                        if (extras.containsKey("audiosource")) {
+                            audioSource = Integer.valueOf(extras.getString("audiosource"));
+                        }
+
+
+                        if (extras.containsKey("timesec")) {
+                            recSec = Float.valueOf(extras.getString("timesec"));
+                        }
+
+
+                        Log.d(TAG, "Call rec");
+                        record(audioSource, ids, recSec);
+                        Log.d(TAG, "Exit");
+                        System.exit(0);
+                    }
+                });
+
+            }
+
+            setContentView(R.layout.activity_main_clean);
+            mInfo = (TextView) findViewById(R.id.cleanInfo);
             return;
         }
 
