@@ -8,7 +8,6 @@ import time
 
 APPNAME_MAIN = 'com.facebook.micapp'
 DUT_FILE_PATH = '/storage/emulated/0/Android/data/com.facebook.micapp/files/'
-debug = False
 
 
 FUNC_CHOICES = {
@@ -114,7 +113,7 @@ def wait_for_exit(serial, debug=0):
             current = -1
 
 
-def pull_info(serial, name):
+def pull_info(serial, name, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
@@ -191,9 +190,6 @@ def main(argv):
         print('version: %s' % __version__)
         sys.exit(0)
 
-    global debug
-    debug = options.debug
-
     # get model and serial number
     model, serial = get_device_info(options.serial, False)
     if type(model) is dict:
@@ -203,7 +199,7 @@ def main(argv):
             model = list(model.values())[0]
 
     if options.func == 'info':
-        pull_info(options.serial, model)
+        pull_info(options.serial, model, options.debug)
 
 
 if __name__ == '__main__':
