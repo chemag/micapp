@@ -122,9 +122,7 @@ public class MainActivity extends AppCompatActivity {
             writer.write(Utils.getAllInputInfo(this));
             writer.write("\n----\n");
 
-            writer.write("\nMicrophones:\n");
-            writer.write(Utils.getAllMicrophonesInfo(this));
-            writer.write("\n----\n");
+            writer.write(Utils.getAllMicrophoneInfo(this));
 
             writer.write("\nEffects:");
             if (mFx.isAecAvailable()) {

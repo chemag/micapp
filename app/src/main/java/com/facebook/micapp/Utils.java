@@ -148,6 +148,22 @@ public class Utils {
     }
 
 
+    public static String locationToString(int location) {
+        switch (location) {
+            case MicrophoneInfo.LOCATION_UNKNOWN:
+                return "unknown";
+            case MicrophoneInfo.LOCATION_MAINBODY:
+                return "mainbody";
+            case MicrophoneInfo.LOCATION_MAINBODY_MOVABLE:
+                return "mainbody movable";
+            case MicrophoneInfo.LOCATION_PERIPHERAL:
+                return "peripheral";
+            default:
+                return location  + " is no valid location";
+        }
+    }
+
+
     public static String audioDeviceTypeToString(int source) {
         switch (source) {
             case AudioDeviceInfo.TYPE_UNKNOWN:
@@ -227,72 +243,110 @@ public class Utils {
     }
 
     public static String getAllInputInfo(Context context) {
-        StringBuilder builder =  new StringBuilder();
+        StringBuilder str =  new StringBuilder();
         final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
-        builder.append("Number of inputs: " + adevs.length);
-        builder.append("\n----\n");
+        str.append("Number of inputs: " + adevs.length);
+        str.append("\n----\n");
         for (AudioDeviceInfo info : adevs) {
-            builder.append("\n" + info.getProductName());
-            builder.append("\nAddress:" + info.getAddress());
-            builder.append("\nType: " + Utils.audioDeviceTypeToString( info.getType()));
-            builder.append(" (" + info.getType() + ")");
-            builder.append("\nid: " + info.getId());
+            str.append("\n" + info.getProductName());
+            str.append("\nAddress:" + info.getAddress());
+            str.append("\nType: " + Utils.audioDeviceTypeToString( info.getType()));
+            str.append(" (" + info.getType() + ")");
+            str.append("\nid: " + info.getId());
             if (android.os.Build.VERSION.SDK_INT >= 31) {
                 List<AudioDescriptor> descs = info.getAudioDescriptors();
                 for (AudioDescriptor desc: descs) {
-                    builder.append("\n" + desc.getDescriptor());
+                    str.append("\n" + desc.getDescriptor());
                 }
             }
             int[] channels = info.getChannelCounts();
 
             for (int channel : channels) {
-                builder.append("\n-- ch.count: " + channel);
+                str.append("\n-- ch.count: " + channel);
             }
             int[] rates = info.getSampleRates();
             for (int rate : rates) {
-                builder.append("\n-- ch.rate: " + rate);
+                str.append("\n-- ch.rate: " + rate);
             }
-            builder.append("\n----\n");
+            str.append("\n----\n");
         }
 
-        return builder.toString();
+        return str.toString();
     }
 
-    public static String getAllMicrophonesInfo(Context context) {
-        StringBuilder builder =  new StringBuilder();
-        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+    public static String getAllMicrophoneInfo(Context context) {
+        StringBuilder str =  new StringBuilder();
+        final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         try {
-            List<MicrophoneInfo> microphones = aman.getMicrophones();
-            builder.append("Number of microphones: " + microphones.size());
-            builder.append("\n----\n");
-            for (MicrophoneInfo info : microphones) {
-                builder.append("\n" + info.getDescription());
-                builder.append("\nAddress:" + info.getAddress());
-                builder.append("\nType: " + Utils.audioDeviceTypeToString( info.getType()));
-                builder.append(" (" + info.getType() + ")");
-                builder.append("\nid: " + info.getId());
-
-                builder.append("\nPath:" + info.getAddress());
-                builder.append("\nDesc:" + info.getDescription());
-                builder.append("\nDirectiviy:" + Utils.directionalityToText(info.getDirectionality()));
-                if (info.getSensitivity() == MicrophoneInfo.SENSITIVITY_UNKNOWN) {
-                    builder.append("\nSensitivity (94dB 1kHz): not specified");
+            List<MicrophoneInfo> microphones = audio_manager.getMicrophones();
+            str.append("microphones {\n");
+            str.append("  size: " + microphones.size() + "\n");
+            for (MicrophoneInfo microphone_info : microphones) {
+                str.append("  microphone_info {\n");
+                str.append("    address: \"" + microphone_info.getAddress() + "\"\n");
+                List<Pair<Integer, Integer>> channel_mappings = microphone_info.getChannelMapping();
+                str.append("    channel_mappings {\n");
+                for (Pair<Integer, Integer> channel_mapping: channel_mappings) {
+                    str.append("      channel_mapping {\n");
+                    str.append("        channel_index: " + channel_mapping.first + "\n");
+                    str.append("        channel_mapping_type: " + channel_mapping.second + "\n");
+                    str.append("      }\n");
+                }
+                str.append("    }\n");
+                str.append("    description: \"" + microphone_info.getDescription() + "\"\n");
+                str.append("    directionality: " + microphone_info.getDirectionality() + "\n");
+                str.append("    directionality_str: \"" + Utils.directionalityToText(microphone_info.getDirectionality()) + "\"\n");
+                str.append("    frequency_responses {\n");
+                List<Pair<Float, Float>> frequency_responses = microphone_info.getFrequencyResponse();
+                for (Pair<Float, Float> frequency_response: frequency_responses) {
+                    str.append("      frequency_response {\n");
+                    str.append(String.format("        frequency_hz: %5.0f\n", frequency_response.first));
+                    str.append(String.format("        response_db: %5.1f\n", frequency_response.second));
+                    str.append("      }\n");
+                }
+                str.append("    }\n");
+                str.append("    group: " + microphone_info.getGroup() + "\n");
+                str.append("    id: " + microphone_info.getId() + "\n");
+                str.append("    index_in_the_group: " + microphone_info.getIndexInTheGroup() + "\n");
+                str.append("    location: " + microphone_info.getLocation() + "\n");
+                str.append("    location_str: \"" + Utils.locationToString(microphone_info.getLocation()) + "\"\n");
+                str.append("    max_spl_1000hz_db: " + microphone_info.getMaxSpl() + "\n");
+                str.append("    min_spl_1000hz_db: " + microphone_info.getMinSpl() + "\n");
+                MicrophoneInfo.Coordinate3F orientation = microphone_info.getOrientation();
+                if (orientation == MicrophoneInfo.ORIENTATION_UNKNOWN) {
+                    str.append("    orientation: unknown\n");
                 } else {
-                    builder.append("\nSensitivity (94dB 1kHz):" + info.getSensitivity());
+                    str.append("    orientation {\n");
+                    str.append("      x: " + orientation.x + "\n");
+                    str.append("      y: " + orientation.y + "\n");
+                    str.append("      z: " + orientation.z + "\n");
+                    str.append("    }\n");
                 }
-                builder.append("\nMax spl:" + info.getMaxSpl());
-                builder.append("\nMin spl:" + info.getMinSpl());
-                List<Pair<Float, Float>> freqs = info.getFrequencyResponse();
-                builder.append("\nFrequency response:");
-                for (Pair<Float, Float> freq: freqs) {
-                    builder.append(String.format("\n%5.0fHz   % 5.1f dB", freq.first, freq.second));
+                MicrophoneInfo.Coordinate3F position = microphone_info.getPosition();
+                if (position == MicrophoneInfo.POSITION_UNKNOWN) {
+                    str.append("    position: unknown\n");
+                } else {
+                    str.append("    position {\n");
+                    str.append("      x: " + position.x + "\n");
+                    str.append("      y: " + position.y + "\n");
+                    str.append("      z: " + position.z + "\n");
+                    str.append("    }\n");
                 }
-                builder.append("\n----\n");
+                float sensitivity = microphone_info.getSensitivity();
+                if (sensitivity == MicrophoneInfo.SENSITIVITY_UNKNOWN) {
+                    str.append("    sensitivity_94db_1kHz: unknown\n");
+                } else {
+                    str.append("    sensitivity_94db_1kHz: " + sensitivity + "\n");
+                }
+                str.append("    type: " + microphone_info.getType() + "\n");
+                str.append("    type_str: \"" + Utils.audioDeviceTypeToString(microphone_info.getType()) + "\"\n");
+                str.append("  }\n");
             }
+            str.append("}\n");
 
-            return builder.toString();
+            return str.toString();
         } catch (IOException e) {
             e.printStackTrace();
         }
