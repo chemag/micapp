@@ -205,4 +205,14 @@ public class AudioEffects {
     public interface StatusUpdatedListener {
         public void onStatusUpdates();
     }
+
+    public String toString() {
+        StringBuilder str = new StringBuilder();
+        str.append("audio_effects {\n");
+        str.append("  aec_available: " + isAecAvailable() + "\n");
+        str.append("  agc_available: " + isAgcAvailable() + "\n");
+        str.append("  ns_available: " + isNsAvailable() + "\n");
+        str.append("}\n");
+        return str.toString();
+    }
 }

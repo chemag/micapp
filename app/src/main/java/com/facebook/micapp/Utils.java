@@ -309,7 +309,7 @@ public class Utils {
     }
 
     public static String getAllAudioDeviceInfo(Context context) {
-        StringBuilder str =  new StringBuilder();
+        StringBuilder str = new StringBuilder();
         final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         AudioDeviceInfo[] audio_device_info_array = audio_manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
         str.append("audio_device_info_array {\n");
@@ -387,7 +387,7 @@ public class Utils {
     }
 
     public static String getAllMicrophoneInfo(Context context) {
-        StringBuilder str =  new StringBuilder();
+        StringBuilder str = new StringBuilder();
         final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
 
         try {
@@ -463,7 +463,6 @@ public class Utils {
         }
         return "";
     }
-
 
     public static AudioDeviceInfo getMatchingDeviceInfo(String id, Context context) {
         final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);

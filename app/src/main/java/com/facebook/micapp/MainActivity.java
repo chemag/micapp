@@ -53,7 +53,7 @@ public class MainActivity extends AppCompatActivity {
     Player mAudioPlayer;
     Recorder mAudioRecorder;
     int mAudioSession = -1;
-    AudioEffects mFx;
+    AudioEffects mAudioEffects;
     ToggleButton mAecButton = null;
 
     ToggleButton mAgcButton = null;
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getInfo() {
-        if (mFx == null) {
+        if (mAudioEffects == null) {
             return;
         }
         File[] externalStorageVolumes =
@@ -119,25 +119,7 @@ public class MainActivity extends AppCompatActivity {
             writer.write("micapp\n\n");
             writer.write(Utils.getAllAudioDeviceInfo(this));
             writer.write(Utils.getAllMicrophoneInfo(this));
-
-            writer.write("\nEffects:");
-            if (mFx.isAecAvailable()) {
-                writer.write("\n+ AEC is available");
-            } else {
-                writer.write("\n- No AEC available");
-            }
-            if (mFx.isAgcAvailable()) {
-                writer.write("\n+ AGC is available");
-            } else {
-                writer.write("\n- No AGC available");
-            }
-            if (mFx.isNsAvailable()) {
-                writer.write("\n+ NS is available");
-            } else {
-                writer.write("\n- No NS available");
-            }
-            writer.write("\n----\n");
-
+            writer.write(mAudioEffects.toString());
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -169,7 +151,7 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, permissions, REQUEST_ALL_PERMISSIONS);
         }
 
-        mFx = new AudioEffects();
+        mAudioEffects = new AudioEffects();
         Bundle extras = this.getIntent().getExtras();
 
         if (extras != null) {
@@ -247,7 +229,7 @@ public class MainActivity extends AppCompatActivity {
         mAecButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mFx.setAecStatus(isChecked);
+                mAudioEffects.setAecStatus(isChecked);
                 checkEffectStatus();
             }
         });
@@ -255,7 +237,7 @@ public class MainActivity extends AppCompatActivity {
         mAgcButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mFx.setAgcStatus(isChecked);
+                mAudioEffects.setAgcStatus(isChecked);
                 checkEffectStatus();
             }
         });
@@ -263,7 +245,7 @@ public class MainActivity extends AppCompatActivity {
         mNsButton.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mFx.setNsStatus(isChecked);
+                mAudioEffects.setNsStatus(isChecked);
                 checkEffectStatus();
             }
         });
@@ -326,14 +308,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     void createAudioEffects() {
-        mFx.enableAudioEffects(mAudioSession);
+        mAudioEffects.enableAudioEffects(mAudioSession);
     }
 
     void disableAudioEffects() {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mFx.disableAudioEffects();
+                mAudioEffects.disableAudioEffects();
                 checkEffectStatus();
             }
 
@@ -408,23 +390,23 @@ public class MainActivity extends AppCompatActivity {
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                if (mFx.isAecAvailable()) {
+                if (mAudioEffects.isAecAvailable()) {
                     mAecButton.setBackgroundColor(getColor(R.color.design_default_color_background));
-                    mAecButton.setChecked(mFx.isAecEnabled());
+                    mAecButton.setChecked(mAudioEffects.isAecEnabled());
                 } else {
                     mAecButton.setBackgroundColor(getColor(R.color.design_default_color_error));
                     mAecButton.setChecked(false);
                 }
-                if (mFx.isAgcAvailable()) {
+                if (mAudioEffects.isAgcAvailable()) {
                     mAgcButton.setBackgroundColor(getColor(R.color.design_default_color_background));
-                    mAgcButton.setChecked(mFx.isAgcEnabled());
+                    mAgcButton.setChecked(mAudioEffects.isAgcEnabled());
                 } else {
                     mAgcButton.setBackgroundColor(getColor(R.color.design_default_color_error));
                     mAgcButton.setChecked(false);
                 }
-                if (mFx.isNsAvailable()) {
+                if (mAudioEffects.isNsAvailable()) {
                     mNsButton.setBackgroundColor(getColor(R.color.design_default_color_background));
-                    mNsButton.setChecked(mFx.isNsEnabled());
+                    mNsButton.setChecked(mAudioEffects.isNsEnabled());
                 } else {
                     mNsButton.setBackgroundColor(getColor(R.color.design_default_color_error));
                     mNsButton.setChecked(false);
