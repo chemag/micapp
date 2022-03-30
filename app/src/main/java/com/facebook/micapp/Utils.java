@@ -1,13 +1,11 @@
 package com.facebook.micapp;
 
-import android.Manifest;
 import android.content.Context;
 import android.media.AudioDescriptor;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioProfile;
-import android.media.AudioTrack;
 import android.media.MediaRecorder;
 import android.media.MicrophoneInfo;
 import android.util.Log;
@@ -16,8 +14,6 @@ import android.util.Pair;
 import java.io.IOException;
 import java.util.List;
 import java.util.Vector;
-
-import androidx.annotation.RequiresPermission;
 
 public class Utils {
     final static String TAG = "mic.utils";
@@ -102,7 +98,8 @@ public class Utils {
             for (int rate : rates) {
                 Log.d(TAG, "-- ch.rate: " + rate);
             }
-            names.add(audio_device_info.getProductName().toString() + "." + audioDeviceTypeToString(audio_device_info.getType()));
+
+            names.add(audioDeviceToString(audio_device_info));
         }
 
         return names;
@@ -464,18 +461,56 @@ public class Utils {
         return "";
     }
 
-    public static AudioDeviceInfo getMatchingDeviceInfo(String id, Context context) {
+    public static AudioDeviceInfo getMatchingAudioDeviceInfo(String id, Context context) {
         final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         AudioDeviceInfo[] audio_device_info_array = audio_manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
 
         for (AudioDeviceInfo audio_device_info : audio_device_info_array) {
-            String tmp = audio_device_info.getProductName().toString() + "." + Utils.audioDeviceTypeToString( audio_device_info.getType());
+            String tmp = audioDeviceToString(audio_device_info);
+            Log.d(TAG, "Compare " + tmp + " with " + id);
             if (tmp.equals(id)) {
                 return audio_device_info;
             }
         }
 
         return null;
+    }
+
+    public static String lookupIdString(int id, Context context) {
+        final AudioManager aman = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
+
+        Log.d(TAG, "Looking for " + id);
+        for (AudioDeviceInfo info : adevs) {
+            Log.d(TAG, "Compare " + id + " with " + info.getId() + " (audioDeviceToString(info)) ");
+            if (id ==  info.getId()){
+                return audioDeviceToString(info);
+            }
+        }
+
+        return "";
+    }
+
+
+    public static Vector<String> lookupIdsStrings(int[] ids, Context context) {
+
+        Vector<String> inputs = new Vector<>();
+        if (ids == null) {
+            inputs.add("default");
+        } else {
+            for (int id: ids) {
+                inputs.add(lookupIdString(id, context));
+            }
+
+        }
+
+        return inputs;
+    }
+
+    public static String audioDeviceToString(AudioDeviceInfo audioDeviceInfo) {
+        return audioDeviceInfo.getProductName().toString() + "." +
+                audioDeviceTypeToString(audioDeviceInfo.getType()) + "." +
+                audioDeviceInfo.getId();
     }
 
 }

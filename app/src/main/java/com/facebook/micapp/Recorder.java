@@ -5,9 +5,7 @@ import android.content.Context;
 import android.content.pm.PackageManager;
 import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
-import android.media.AudioManager;
 import android.media.AudioRecord;
-import android.media.MediaRecorder;
 import android.media.MicrophoneInfo;
 import android.util.Log;
 
@@ -49,8 +47,6 @@ public class Recorder {
         Thread recordThread = new Thread(new Runnable() {
             @Override
             public void run() {
-
-
                 if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                     Log.d(TAG, "Missing audio record permission");
                     return;
@@ -76,8 +72,8 @@ public class Recorder {
                 if (!inputDevice.toLowerCase().equals("default")) {
                     Log.d(TAG, "\n\n--------------- Check Audio ---------------------");
                     Log.d(TAG, "Look for "+inputDevice);
-                    routed_ok = Utils.getMatchingDeviceInfo(inputDevice, mContext);
-
+                    routed_ok = Utils.getMatchingAudioDeviceInfo(inputDevice, mContext);
+                    recorder.setPreferredDevice(routed_ok);
                 }
                 float sampleRate = 48000;
                 int bufferSize = (int)sampleRate;
@@ -97,7 +93,9 @@ public class Recorder {
                         // recording is started
                         info = recorder.getRoutedDevice();
                     }
-                    String id = Utils.clean(info.getProductName().toString() + "." + Utils.audioDeviceTypeToString( info.getType()));
+                    String id = Utils.clean(info.getProductName().toString() + "." +
+                                                  Utils.audioDeviceTypeToString( info.getType())+ "." +
+                                                  info.getId());
                     filename = primaryExternalStorage + "/capture_48kHz_" + id + ".raw";
                     Log.d(TAG, "Record to \"" + filename + "\"");
                     try {
@@ -139,11 +137,27 @@ public class Recorder {
                                 strBuilder.append("\nMax spl:" + mic.getMaxSpl());
                                 strBuilder.append("\nMin spl:" + mic.getMaxSpl());
                                 strBuilder.append("\n------------\n\n");
+
+
                             }
                             final String text = strBuilder.toString();
                             mStatusText = text;
                             for (RecordStatsUpdateListener listener : mStatsListeners) {
                                 listener.InputTextUpdated(mStatusText);
+                            }
+
+                            AudioDeviceInfo audioDeviceInfo  = recorder.getRoutedDevice();
+                            String descr = Utils.audioDeviceToString(audioDeviceInfo);
+                            if (!inputDevice.equals("default") && descr.equals(inputDevice)) {
+                                Log.d(TAG, "Preferred device succesfully activated");
+                            } else if (!inputDevice.equals("default")) {
+                                Log.d(TAG, "Wrong device is running!");
+                                Log.d(TAG, "Wanted: \"" + inputDevice + "\"");
+                                Log.d(TAG, "Routed: \"" + descr + "\"");
+                                mIsRunning = false;
+                                recorder.stop();
+                                fos.close();
+                                (new File(filerecPath)).delete();
                             }
                         } catch (IOException e) {
                             e.printStackTrace();

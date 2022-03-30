@@ -5,6 +5,9 @@ import os
 import subprocess
 import sys
 import time
+import soundfile as sf
+import re
+
 
 APPNAME_MAIN = 'com.facebook.micapp'
 DUT_FILE_PATH = '/storage/emulated/0/Android/data/com.facebook.micapp/files/'
@@ -13,6 +16,7 @@ DUT_FILE_PATH = '/storage/emulated/0/Android/data/com.facebook.micapp/files/'
 FUNC_CHOICES = {
     'help': 'show help options',
     'info': 'provide audio uplink',
+    'record': 'record an audioclip',
 }
 
 default_values = {
@@ -90,13 +94,13 @@ def run_cmd(cmd, debug=0):
     return ret, stdout.decode(), stderr.decode()
 
 
-def wait_for_exit(serial, debug=0):
-    adb_cmd = f'adb {serial} shell pidof {APPNAME_MAIN}'
+def wait_for_exit(serial):
+    adb_cmd = f'adb -s {serial} shell pidof {APPNAME_MAIN}'    
     pid = -1
     current = 1
     while (current != -1):
         if pid == -1:
-            ret, stdout, stderr = run_cmd(adb_cmd, False)
+            ret, stdout, stderr = run_cmd(adb_cmd, debug)
             pid = -1
             if len(stdout) > 0:
                 pid = int(stdout)
@@ -132,7 +136,6 @@ def pull_info(serial, name, debug=0):
 
     for file in output_files:
         if file == '':
-            print('No file found')
             continue
         # pull the output file
         base_file_name = os.path.basename(file).strip()
@@ -143,7 +146,76 @@ def pull_info(serial, name, debug=0):
             print(f'{fl.read()}')
         if debug > 0:
             print(f'file output: {filename}')
+        print('\n__________________\n')
+        print(f'Data also available in {filename}')
 
+
+
+
+def record(serial, name, source=None, ids=None, timesec=10.0):
+    adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
+    ret, stdout, stderr = run_cmd(adb_cmd, debug)
+    # clean out old files
+    adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.raw'
+    adb_cmd = f'adb -s {serial} shell  am start -e rec 1 ' \
+              f'{build_args(source, ids, timesec)} -n {APPNAME_MAIN}/.MainActivity'
+    ret, stdout, stderr = run_cmd(adb_cmd, debug)
+    time.sleep(1)
+    wait_for_exit(serial)
+    time.sleep(2)
+
+    if debug:
+        adb_cmd = f'adb -s {serial} shell ls -l {DUT_FILE_PATH}*.raw'
+        ret, stdout, stderr = run_cmd(adb_cmd, debug)
+        print(f'Files:\n{stdout}')
+
+    adb_cmd = f'adb -s {serial} shell ls {DUT_FILE_PATH}*.raw'
+    ret, stdout, stderr = run_cmd(adb_cmd, debug)
+    output_files = re.split("[ \n]", stdout)
+
+    if len(output_files) == 0:
+        exit(0)
+
+    audiofiles = []
+    for file in output_files:
+        print(f'*** PULL {file} ***')
+        if file == '':
+            continue
+        # pull the output file
+        base_file_name = os.path.basename(file).strip()
+        adb_cmd = f'adb -s {serial} pull {file.strip()} {base_file_name}'
+        run_cmd(adb_cmd, debug)
+
+        print(f'\n*** convert {base_file_name} ***\n')
+        # convert to wav, currently only 48k
+        print(f'Open: {base_file_name} as raw file')
+        audio = sf.SoundFile(base_file_name, 'r', format='RAW', samplerate=48000,
+                         channels=1, subtype='PCM_16', endian='FILE')
+        pcmname = f'{os.path.splitext(base_file_name)[0]}.wav'
+        print(f'Convert {base_file_name} to wav: {pcmname}')
+        wav = sf.SoundFile(pcmname, 'w', format='WAV', samplerate=48000,
+                         channels=1, subtype='PCM_16', endian='FILE')
+        print("Read and write");
+        wav.write(audio.read());
+        wav.close()
+        audio.close()
+        audiofiles.append(pcmname)
+        os.remove(base_file_name)
+
+
+    for name in audiofiles:
+        print(f'{name}')
+
+
+def build_args(audiosource, inputids, timesec):
+    ret = ""
+    if not isinstance(audiosource, type(None)):
+        ret = f"{ret} -e audiosource {audiosource} "
+    if not isinstance(inputids, type(None)):
+        ret = f"{ret} -e inputid {inputids} "
+    if not isinstance(timesec, type(None)):
+        ret = f"{ret} -e timesec {timesec} "    
+    return ret
 
 def get_options(argv):
     parser = argparse.ArgumentParser(description=__doc__)
@@ -169,6 +241,14 @@ def get_options(argv):
                                    FUNC_CHOICES.items())),
         help='function arg',)
 
+    parser.add_argument(
+        '--audiosource', default=None)
+    parser.add_argument(
+        '--inputids', default=None)
+    parser.add_argument(
+        '-t', '--timesec', type=float, default=10.0)
+
+
     options = parser.parse_args(argv[1:])
 
     # implement help
@@ -182,13 +262,14 @@ def get_options(argv):
 
     return options
 
-
 def main(argv):
     options = get_options(argv)
     if options.version:
         print('version: %s' % __version__)
         sys.exit(0)
 
+    global debug
+    debug = options.debug
     # get model and serial number
     model, serial = get_device_info(options.serial, False)
     if type(model) is dict:
@@ -199,6 +280,10 @@ def main(argv):
 
     if options.func == 'info':
         pull_info(options.serial, model, options.debug)
+    if options.func == 'record':
+        record(options.serial, model, options.audiosource, options.inputids, options.timesec)
+    else:
+        pull_info(options.serial, model)
 
 
 if __name__ == '__main__':
