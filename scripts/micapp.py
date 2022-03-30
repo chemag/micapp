@@ -19,9 +19,31 @@ FUNC_CHOICES = {
     'record': 'record an audioclip',
 }
 
+AUDIO_SOURCE_CHOICES = {
+    'CAMCORDER': (5, 'microphone audio source tuned for video recording audio '
+                  'source'),
+    'DEFAULT': (0, 'default audio source'),
+    'MIC': (1, 'microphone audio source'),
+    'REMOTE_SUBMIX': (8, 'audio source for a submix of audio streams to be '
+                      'presented remotely'),
+    'UNPROCESSED': (9, 'microphone audio source tuned for unprocessed (raw) '
+                    'sound if available, behaves like DEFAULT otherwise'),
+    'VOICE_CALL': (4, 'voice call uplink + downlink audio source'),
+    'VOICE_COMMUNICATION': (7, 'microphone audio source tuned for voice '
+                            'communications such as VoIP'),
+    'VOICE_DOWNLINK': (3, 'voice call downlink (Rx) audio source'),
+    'VOICE_PERFORMANCE': (10, 'source for capturing audio meant to be '
+                          'processed in real time and played back for '
+                          'live performance'),
+    'VOICE_RECOGNITION': (6, 'microphone audio source tuned for voice '
+                          'recognition'),
+    'VOICE_UPLINK': (2, 'voice call uplink (Tx) audio source'),
+}
+
 default_values = {
     'debug': 0,
     'func': 'help',
+    'audiosource': None,
 }
 
 __version__ = '0.1'
@@ -150,13 +172,13 @@ def pull_info(serial, name, debug=0):
         print(f'Data also available in {filename}')
 
 
-def record(serial, name, source=None, ids=None, timesec=10.0):
+def record(serial, name, audiosource=None, ids=None, timesec=10.0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
     adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.raw'
     adb_cmd = (f'adb -s {serial} shell  am start -e rec 1 '
-               f'{build_args(source, ids, timesec)} '
+               f'{build_args(audiosource, ids, timesec)} '
                f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     time.sleep(1)
@@ -208,11 +230,12 @@ def record(serial, name, source=None, ids=None, timesec=10.0):
 
 def build_args(audiosource, inputids, timesec):
     ret = ''
-    if not isinstance(audiosource, type(None)):
-        ret = f'{ret} -e audiosource {audiosource} '
-    if not isinstance(inputids, type(None)):
+    if audiosource is not None:
+        audiosource_int = AUDIO_SOURCE_CHOICES[audiosource][0]
+        ret = f'{ret} -e audiosource {audiosource_int} '
+    if inputids is not None:
         ret = f'{ret} -e inputid {inputids} '
-    if not isinstance(timesec, type(None)):
+    if timesec is not None:
         ret = f'{ret} -e timesec {timesec} '
     return ret
 
@@ -240,9 +263,13 @@ def get_options(argv):
         metavar='%s' % (' | '.join('{}: {}'.format(k, v) for k, v in
                                    FUNC_CHOICES.items())),
         help='function arg',)
-
     parser.add_argument(
-        '--audiosource', default=None)
+        '--audiosource', type=str,
+        default=default_values['audiosource'],
+        choices=AUDIO_SOURCE_CHOICES.keys(),
+        metavar='%s' % (' | '.join('{}: {}'.format(k, v[1]) for k, v in
+                                   AUDIO_SOURCE_CHOICES.items())),
+        help='audiosource arg',)
     parser.add_argument(
         '--inputids', default=None)
     parser.add_argument(

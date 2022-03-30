@@ -111,6 +111,13 @@ capture from both `audio_device_info.id` 8 and 22.
 $ ./scripts/micapp.py record --inputids 8,22  -t 5
 ...
 $ ls capture*
-capture_48kHz_....builtin_mic.8.wav
+capture_48kHz_.name.builtin_mic.8.wav
 capture_48kHz_USB-Audio_-_HD_Web_Camera.usb_device.22.wav
+```
+
+You can also choose the default mic for a given `AudioSource`.
+
+```
+$ ./scripts/micapp.py -dd record --audiosource VOICE_CALL -t 2
+...
 ```
