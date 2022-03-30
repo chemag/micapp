@@ -212,6 +212,12 @@ public class AudioEffects {
         str.append("  aec_available: " + isAecAvailable() + "\n");
         str.append("  agc_available: " + isAgcAvailable() + "\n");
         str.append("  ns_available: " + isNsAvailable() + "\n");
+        str.append("  aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
+        str.append("  agc_allocated: " + (mAutomaticGainControl != null) + "\n");
+        str.append("  ns_allocated: " + (mNoiseSuppressor != null) + "\n");
+        str.append("  aec_enabled: " + isAecEnabled() + "\n");
+        str.append("  agc_enabled: " + isAgcEnabled() + "\n");
+        str.append("  ns_enabled: " + isNsEnabled() + "\n");
         str.append("}\n");
         return str.toString();
     }
