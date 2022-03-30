@@ -76,33 +76,8 @@ public class Recorder {
                 if (!inputDevice.toLowerCase().equals("default")) {
                     Log.d(TAG, "\n\n--------------- Check Audio ---------------------");
                     Log.d(TAG, "Look for "+inputDevice);
-                    final AudioManager aman = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
-                    AudioDeviceInfo[] adevs = aman.getDevices(AudioManager.GET_DEVICES_INPUTS);
+                    routed_ok = Utils.getMatchingDeviceInfo(inputDevice, mContext);
 
-                    for (AudioDeviceInfo info : adevs) {
-                        Log.d(TAG, "product_name: " + info.getProductName());
-                        int[] channels = info.getChannelCounts();
-
-                        Log.d(TAG, "type: " + info.getType());
-                        Log.d(TAG, "id: " + info.getId());
-                        for (int channel : channels) {
-                            Log.d(TAG, "-- ch.count: " + channel);
-                        }
-                        int[] rates = info.getSampleRates();
-                        for (int rate : rates) {
-                            Log.d(TAG, "-- ch.rate: " + rate);
-                        }
-
-                        String tmp = info.getProductName().toString() + "." + Utils.audioDeviceTypeToString( info.getType());
-                        Log.d(TAG, "Compare: " + inputDevice + " with " + tmp);
-                        if (tmp.equals(inputDevice)) {
-                            Log.d(TAG, "Set preferred device: "+ inputDevice);
-                            if (recorder.setPreferredDevice(info)) {
-                                routed_ok = info;
-                            }
-                            break;
-                        }
-                    }
                 }
                 float sampleRate = 48000;
                 int bufferSize = (int)sampleRate;
