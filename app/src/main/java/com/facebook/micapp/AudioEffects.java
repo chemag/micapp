@@ -12,33 +12,33 @@ public class AudioEffects {
     final static String TAG = "mic.fx";
 
     int mAudioSession = -1;
-    AcousticEchoCanceler mAec = null;
-    AutomaticGainControl mAgc = null;
-    NoiseSuppressor mNs = null;
+    AcousticEchoCanceler mAcousticEchoCanceler = null;
+    AutomaticGainControl mAutomaticGainControl = null;
+    NoiseSuppressor mNoiseSuppressor = null;
 
     Vector<StatusUpdatedListener> listeners = new Vector<>();
 
     void disableAudioEffects() {
         try {
-            if (mAec != null && mAec.getEnabled()) {
+            if (mAcousticEchoCanceler != null && mAcousticEchoCanceler.getEnabled()) {
                 Log.d(TAG, "Release aec");
-                mAec.release();
+                mAcousticEchoCanceler.release();
             }
         } catch (IllegalStateException is) {
             Log.e(TAG, "Wrong state");
         }
         try {
-            if (mAgc != null && mAgc.getEnabled()) {
+            if (mAutomaticGainControl != null && mAutomaticGainControl.getEnabled()) {
                 Log.d(TAG, "Release agc");
-                mAgc.release();
+                mAutomaticGainControl.release();
             }
         } catch (IllegalStateException is) {
             Log.e(TAG, "Wrong state");
         }
         try {
-            if (mNs != null && mNs.getEnabled()) {
+            if (mNoiseSuppressor != null && mNoiseSuppressor.getEnabled()) {
                 Log.d(TAG, "Release ns");
-                mNs.release();
+                mNoiseSuppressor.release();
             }
         } catch (IllegalStateException is) {
             Log.e(TAG, "Wrong state");
@@ -54,13 +54,13 @@ public class AudioEffects {
 
         Log.d(TAG, "Create audio effects, session: " + mAudioSession);
                 if (mAudioSession != -1) {
-        if (mAec != null) {
+        if (mAcousticEchoCanceler != null) {
             Log.d(TAG, "Release aec");
-            mAec.release();
+            mAcousticEchoCanceler.release();
         }
-        mAec = AcousticEchoCanceler.create(mAudioSession);
-        if (mAec != null) {
-            mAec.setControlStatusListener(new AudioEffect.OnControlStatusChangeListener() {
+        mAcousticEchoCanceler = AcousticEchoCanceler.create(mAudioSession);
+        if (mAcousticEchoCanceler != null) {
+            mAcousticEchoCanceler.setControlStatusListener(new AudioEffect.OnControlStatusChangeListener() {
                 @Override
                 public void onControlStatusChange(AudioEffect effect, boolean controlGranted) {
                     Log.d(TAG, "Status changes: " + effect.getDescriptor() + ", granted: " + controlGranted);
@@ -73,13 +73,13 @@ public class AudioEffects {
             Log.e(TAG, "Could not create a AEC controller");
         }
 
-        if (mAgc != null) {
+        if (mAutomaticGainControl != null) {
             Log.d(TAG, "Release agc");
-            mAgc.release();
+            mAutomaticGainControl.release();
         }
-        mAgc = AutomaticGainControl.create(mAudioSession);
-        if (mAgc != null) {
-            mAgc.setControlStatusListener(new AudioEffect.OnControlStatusChangeListener() {
+        mAutomaticGainControl = AutomaticGainControl.create(mAudioSession);
+        if (mAutomaticGainControl != null) {
+            mAutomaticGainControl.setControlStatusListener(new AudioEffect.OnControlStatusChangeListener() {
                 @Override
                 public void onControlStatusChange(AudioEffect effect, boolean controlGranted) {
                     Log.d(TAG, "Status changes: " + effect.getDescriptor() + ", granted: " + controlGranted);
@@ -92,13 +92,13 @@ public class AudioEffects {
             Log.e(TAG, "Could not create a AGC controller");
         }
 
-        if (mNs != null) {
+        if (mNoiseSuppressor != null) {
             Log.d(TAG, "Release ns");
-            mNs.release();
+            mNoiseSuppressor.release();
         }
-        mNs = NoiseSuppressor.create(mAudioSession);
-        if (mNs != null) {
-            mNs.setControlStatusListener(new AudioEffect.OnControlStatusChangeListener() {
+        mNoiseSuppressor = NoiseSuppressor.create(mAudioSession);
+        if (mNoiseSuppressor != null) {
+            mNoiseSuppressor.setControlStatusListener(new AudioEffect.OnControlStatusChangeListener() {
                 @Override
                 public void onControlStatusChange(AudioEffect effect, boolean controlGranted) {
                     Log.d(TAG, "Status changes: " + effect.getDescriptor() + ", granted: " + controlGranted);
@@ -107,7 +107,7 @@ public class AudioEffects {
                     }
                 }
             });
-            Log.d(TAG, "Status ns enabled: " + mNs.getEnabled());
+            Log.d(TAG, "Status ns enabled: " + mNoiseSuppressor.getEnabled());
 
         } else {
             Log.e(TAG, "Could not create a NS controller");
@@ -141,21 +141,21 @@ public class AudioEffects {
     }
 
     public boolean setAecStatus(boolean enable) {
-        return setStatus(mAec, enable);
+        return setStatus(mAcousticEchoCanceler, enable);
     }
 
     public boolean setAgcStatus(boolean enable) {
-        return setStatus(mAgc, enable);
+        return setStatus(mAutomaticGainControl, enable);
     }
 
     public boolean setNsStatus(boolean enable) {
-        return setStatus(mNs, enable);
+        return setStatus(mNoiseSuppressor, enable);
     }
 
     public boolean isAecEnabled() {
         try {
-            if (mAec != null)
-                return mAec.getEnabled();
+            if (mAcousticEchoCanceler != null)
+                return mAcousticEchoCanceler.getEnabled();
             else return false;
         } catch (IllegalStateException is) {
             Log.e(TAG, "Aec is in wrong state: " + is.getMessage());
@@ -169,8 +169,8 @@ public class AudioEffects {
 
     public boolean isAgcEnabled() {
         try {
-            if (mAgc != null)
-                return mAgc.getEnabled();
+            if (mAutomaticGainControl != null)
+                return mAutomaticGainControl.getEnabled();
             else return false;
         } catch (IllegalStateException is) {
             Log.e(TAG, "Agc is in wrong state: " + is.getMessage());
@@ -184,8 +184,8 @@ public class AudioEffects {
 
     public boolean isNsEnabled() {
         try {
-            if (mNs != null)
-                return mNs.getEnabled();
+            if (mNoiseSuppressor != null)
+                return mNoiseSuppressor.getEnabled();
             else return false;
         } catch (IllegalStateException is) {
             Log.e(TAG, "Ns is in wrong state: " + is.getMessage());
