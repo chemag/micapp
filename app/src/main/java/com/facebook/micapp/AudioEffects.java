@@ -7,6 +7,7 @@ import android.media.audiofx.NoiseSuppressor;
 import android.util.Log;
 
 import java.util.Vector;
+import java.util.UUID;
 
 public class AudioEffects {
     final static String TAG = "mic.fx";
@@ -206,8 +207,46 @@ public class AudioEffects {
         public void onStatusUpdates();
     }
 
+    public String typeToString(UUID type) {
+        if (type.compareTo(AudioEffect.EFFECT_TYPE_AEC) == 0)
+            return "aec";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_AGC) == 0)
+            return "agc";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_BASS_BOOST) == 0)
+            return "bass_boost";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_ENV_REVERB) == 0)
+            return "env_reverb";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_EQUALIZER) == 0)
+            return "equalizer";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_NS) == 0)
+            return "ns";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_PRESET_REVERB) == 0)
+            return "preset_reverb";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_VIRTUALIZER) == 0)
+            return "virtualizer";
+        else if (type.compareTo(AudioEffect.EFFECT_TYPE_DYNAMICS_PROCESSING) == 0)
+            return "dynamics_processing";
+        else if (android.os.Build.VERSION.SDK_INT >= 31) {
+            if (type.compareTo(AudioEffect.EFFECT_TYPE_HAPTIC_GENERATOR) == 0)
+                return "haptic_generator";
+        }
+        return "unknown";
+    }
+
     public String toString() {
         StringBuilder str = new StringBuilder();
+        AudioEffect.Descriptor[] descriptor_array = AudioEffect.queryEffects();
+        str.append("audio_effect_descriptors {\n");
+        for (AudioEffect.Descriptor descriptor: descriptor_array) {
+            str.append("  descriptor {\n");
+            str.append("    connectMode: \"" + descriptor.connectMode + "\"\n");
+            str.append("    implementor: \"" + descriptor.implementor + "\"\n");
+            str.append("    name: \"" + descriptor.name + "\"\n");
+            str.append("    type: \"" + typeToString(descriptor.type) + "\"\n");
+            str.append("    uuid: \"" + descriptor.uuid.toString() + "\"\n");
+            str.append("  }\n");
+        }
+        str.append("}\n");
         str.append("audio_effects {\n");
         str.append("  aec_available: " + isAecAvailable() + "\n");
         str.append("  agc_available: " + isAgcAvailable() + "\n");
