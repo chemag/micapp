@@ -196,7 +196,8 @@ def record(serial, name, audiosource=None, ids=None, timesec=10.0, debug=0):
     output_files = re.split('[ \n]', stdout.strip())
 
     if len(output_files) == 0 or len(stdout) == 0:
-        print('No files created, most likely the configuration is not supported on the device')
+        print('No files created, most likely configuration is not supported '
+              'on the device')
         print('check source and input settings and/or look at logcat output')
         exit(0)
 
