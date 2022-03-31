@@ -116,7 +116,7 @@ def run_cmd(cmd, debug=0):
     return ret, stdout.decode(), stderr.decode()
 
 
-def wait_for_exit(serial):
+def wait_for_exit(serial, debug=0):
     adb_cmd = f'adb -s {serial} shell pidof {APPNAME_MAIN}'
     pid = -1
     current = 1
@@ -147,7 +147,7 @@ def pull_info(serial, name, debug=0):
     adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 '
                f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
-    wait_for_exit(serial)
+    wait_for_exit(serial, debug)
 
     adb_cmd = f'adb -s {serial} shell ls {DUT_FILE_PATH}*.txt'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
@@ -172,7 +172,7 @@ def pull_info(serial, name, debug=0):
         print(f'Data also available in {filename}')
 
 
-def record(serial, name, audiosource=None, ids=None, timesec=10.0):
+def record(serial, name, audiosource=None, ids=None, timesec=10.0, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
@@ -295,8 +295,6 @@ def main(argv):
         print('version: %s' % __version__)
         sys.exit(0)
 
-    global debug
-    debug = options.debug
     # get model and serial number
     model, serial = get_device_info(options.serial, False)
     if type(model) is dict:
@@ -309,7 +307,7 @@ def main(argv):
         pull_info(options.serial, model, options.debug)
     if options.func == 'record':
         record(options.serial, model, options.audiosource, options.inputids,
-               options.timesec)
+               options.timesec, options.debug)
     else:
         pull_info(options.serial, model)
 
