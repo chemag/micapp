@@ -3,7 +3,11 @@ package com.facebook.micapp;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioDeviceInfo;
+import android.media.AudioManager;
+import android.media.AudioRecordingConfiguration;
 import android.media.MediaRecorder;
+import android.media.audiofx.AudioEffect;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -30,6 +34,7 @@ import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
@@ -54,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
     boolean mRecord = true;
 
     Handler handler = new Handler();
+    float mRecSec = 10.0f;
+    int  mAudiosource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
+    int[] mDeviceIds = null;
 
     public static String[] retrieveNotGrantedPermissions(Context context) {
         ArrayList<String> nonGrantedPerms = new ArrayList<>();
@@ -79,7 +87,7 @@ public class MainActivity extends AppCompatActivity {
         return nonGrantedPerms.toArray(new String[nonGrantedPerms.size()]);
     }
 
-    private void getInfo() {
+    private void getInfo(boolean extendedTesting) {
         if (mAudioEffects == null) {
             return;
         }
@@ -89,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
 
         Log.d(TAG, "primaryExternalStorage: "+ primaryExternalStorage.getAbsolutePath());
         String filename = primaryExternalStorage.getAbsolutePath() + "/micapp_info.txt";
+        (new File(filename)).delete();
         FileWriter writer = null;
         try {
             writer = new FileWriter(filename);
@@ -96,6 +105,58 @@ public class MainActivity extends AppCompatActivity {
             writer.write(Utils.getAllAudioDeviceInfo(this));
             writer.write(Utils.getAllMicrophoneInfo(this));
             writer.write(mAudioEffects.toString());
+
+            if (extendedTesting) {
+                int audioSessionId = -1;
+                // With extened testing take default settings or cli settings and setup te routing
+                // verifying availability of hw effects
+                Log.d(TAG, "Call rec");
+                record(mAudiosource, mDeviceIds, 0);
+                try {
+                    Thread.sleep((long)(1000));
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                Log.d(TAG, "Get audio manager");
+                AudioManager audio_manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+                List<AudioRecordingConfiguration> audio_record_configs = audio_manager.getActiveRecordingConfigurations();
+                if (audio_record_configs.size() == 0) {
+                    writer.write("Failed to start recording");
+                } else {
+                    for (AudioRecordingConfiguration config : audio_record_configs) {
+                        writer.write("Effects default {\n");
+                        AudioDeviceInfo audio_device_info = config.getAudioDevice();
+                        writer.write(Utils.getAudioDeviceInfo(audio_device_info, 1));
+                        List<AudioEffect.Descriptor> audio_effects_descriptors = null;
+                        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                            audio_effects_descriptors = config.getClientEffects();
+                            for (AudioEffect.Descriptor descr : audio_effects_descriptors) {
+                                writer.write(Utils.getAudioEffectInfo(descr, 1));
+                            }
+                        }
+                        writer.write("}\n");
+                        audioSessionId = config.getClientAudioSessionId();
+                        Log.d(TAG, "Enable effects: " + audioSessionId);
+                        mAudioEffects.createAudioEffects(audioSessionId);
+                        writer.write("Effects instantiated {\n");
+                        writer.write(mAudioEffects.getStatusAsString(1));
+                        mAudioEffects.setAecStatus(true);
+                        mAudioEffects.setAgcStatus(true);
+                        mAudioEffects.setNsStatus(true);
+                        writer.write("}\n");
+                        writer.write("Effects enabled {\n");
+                        writer.write(mAudioEffects.getStatusAsString(1));
+                        mAudioEffects.setAecStatus(false);
+                        mAudioEffects.setAgcStatus(false);
+                        mAudioEffects.setNsStatus(false);
+                        writer.write("}\n");
+                        writer.write("Effects disabled {\n");
+                        writer.write(mAudioEffects.getStatusAsString(1));
+                        writer.write("}\n");
+                    }
+                }
+            }
+
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
@@ -124,16 +185,16 @@ public class MainActivity extends AppCompatActivity {
             (new Thread(() -> rec.checkAndRecord(audioSource, input, true))).start();
         }
 
-        try {
-            Thread.sleep((long)(secs * 1000));
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        if (secs > 0) {
+            try {
+                Thread.sleep((long)(secs * 1000));
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            for (Recorder rec : recorders) {
+                rec.stopRecording();
+            }
         }
-
-        for (Recorder rec: recorders) {
-            rec.stopRecording();
-        }
-
     }
 
     @Override
@@ -155,11 +216,31 @@ public class MainActivity extends AppCompatActivity {
         Bundle extras = this.getIntent().getExtras();
 
         if (extras != null) {
+            if (extras.containsKey("inputid")) {
+                String[] splits = extras.getString("inputid").split("[,]");
+                mDeviceIds = new int[splits.length];
+                for (int i = 0; i < splits.length; i++){
+                    mDeviceIds[i] = Integer.valueOf(splits[i]);
+                }
+            }
+
+            if (extras.containsKey("audiosource")) {
+                mAudiosource = Integer.valueOf(extras.getString("audiosource"));
+            }
+
+
+            if (extras.containsKey("timesec")) {
+                mRecSec = Float.valueOf(extras.getString("timesec"));
+            }
             if (extras.containsKey("nogui")) {
                 handler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        getInfo();
+                        boolean extendedVerification = false;
+                        if (extras.containsKey("fxverify")) {
+                            extendedVerification = true;
+                        }
+                        getInfo(extendedVerification);
                         Log.d(TAG, "No gui, closing down");
                         System.exit(0);
                     }
@@ -172,29 +253,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d(TAG, "cli recording");
-                        int[] ids = null;
-                        int audioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
-                        float recSec = 10.0f;
-                        if (extras.containsKey("inputid")) {
-                            String[] splits = extras.getString("inputid").split("[,]");
-                            ids = new int[splits.length];
-                            for (int i = 0; i < splits.length; i++){
-                                ids[i] = Integer.valueOf(splits[i]);
-                            }
-                        }
-
-                        if (extras.containsKey("audiosource")) {
-                            audioSource = Integer.valueOf(extras.getString("audiosource"));
-                        }
-
-
-                        if (extras.containsKey("timesec")) {
-                            recSec = Float.valueOf(extras.getString("timesec"));
-                        }
-
-
-                        Log.d(TAG, "Call rec");
-                        record(audioSource, ids, recSec);
+                        record(mAudiosource, mDeviceIds, mRecSec);
                         Log.d(TAG, "Exit");
                         System.exit(0);
                     }
@@ -346,7 +405,7 @@ public class MainActivity extends AppCompatActivity {
 
 
     void createAudioEffects() {
-        mAudioEffects.enableAudioEffects(mAudioSession);
+        mAudioEffects.createAudioEffects(mAudioSession);
     }
 
     void disableAudioEffects() {

@@ -46,7 +46,7 @@ public class AudioEffects {
         }
     }
 
-    void enableAudioEffects(int sessionid) {
+    void createAudioEffects(int sessionid) {
         disableAudioEffects();
         mAudioSession = sessionid;
         if (mAudioSession < 0) {
@@ -258,6 +258,24 @@ public class AudioEffects {
         str.append("  agc_enabled: " + isAgcEnabled() + "\n");
         str.append("  ns_enabled: " + isNsEnabled() + "\n");
         str.append("}\n");
+        return str.toString();
+    }
+
+    public String getStatusAsString(int indent) {
+        String tab = Utils.getIndentation(indent);
+        String tab2 = Utils.getIndentation(indent);
+        StringBuilder str = new StringBuilder();
+        str.append(tab + "audio_effects {\n");
+        str.append(tab2 + "  aec_available: " + isAecAvailable() + "\n");
+        str.append(tab2 + "  agc_available: " + isAgcAvailable() + "\n");
+        str.append(tab2 + "  ns_available: " + isNsAvailable() + "\n");
+        str.append(tab2 + "  aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
+        str.append(tab2 + "  agc_allocated: " + (mAutomaticGainControl != null) + "\n");
+        str.append(tab2 + "  ns_allocated: " + (mNoiseSuppressor != null) + "\n");
+        str.append(tab2 + "  aec_enabled: " + isAecEnabled() + "\n");
+        str.append(tab2 + "  agc_enabled: " + isAgcEnabled() + "\n");
+        str.append(tab2 + "  ns_enabled: " + isNsEnabled() + "\n");
+        str.append(tab + "}\n");
         return str.toString();
     }
 }
