@@ -139,12 +139,17 @@ def wait_for_exit(serial, debug=0):
             current = -1
 
 
-def pull_info(serial, name, debug=0):
+def pull_info(serial, name, extended, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
     adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.txt'
-    adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 '
+    ret, stdout, stderr = run_cmd(adb_cmd, debug)
+    extra = ''
+    if extended:
+        extra =  '-e fxverify 1 '
+
+    adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 {extra}'
                f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     wait_for_exit(serial, debug)
@@ -273,7 +278,9 @@ def get_options(argv):
         '--inputids', default=None)
     parser.add_argument(
         '-t', '--timesec', type=float, default=10.0)
-
+    parser.add_argument(
+        '--extended', action='store_true',
+        help='Extended version of the function',)
     options = parser.parse_args(argv[1:])
 
     # implement help
@@ -303,12 +310,10 @@ def main(argv):
             model = list(model.values())[0]
 
     if options.func == 'info':
-        pull_info(options.serial, model, options.debug)
+        pull_info(options.serial, model, options.extended, options.debug)
     if options.func == 'record':
         record(options.serial, model, options.audiosource, options.inputids,
                options.timesec, options.debug)
-    else:
-        pull_info(options.serial, model)
 
 
 if __name__ == '__main__':
