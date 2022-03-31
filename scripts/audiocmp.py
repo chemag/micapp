@@ -107,6 +107,45 @@ MODE_CHOICES = {
 }
 
 
+def adjust_row(row, mode, target, workdir):
+    if mode == 'rms':
+        diff = target - row.rms
+    elif mode == 'peak':
+        diff = target - row.peak
+    elif mode == 'safe':
+        diff = target - row.rms
+    elif mode == 'rms_common':
+        diff = target - row.rms
+    elif mode == 'peak_common':
+        diff = target - row.peak
+    adjust(row.af, mode, diff, workdir)
+    row.af.close()
+
+
+RMS_TARGET = -24
+PEAK_TARGET = -1
+
+
+def get_target(mode, data):
+    # calculate the target
+    if mode == 'rms':
+        return RMS_TARGET
+    elif mode == 'peak':
+        return PEAK_TARGET
+    elif mode == 'safe':
+        # take the one with largest crest factor and use
+        # the crest to calculate a rms value (add 1 dB for safety)
+        return -data['crest'].max() + 1
+    elif mode == 'rms_common':
+        # take the one with highest peak and use
+        # that to calculate a peak adjusted value
+        return data['rms'].max()
+    elif mode == 'peak_common':
+        # take the one with highest peak and use
+        # that to calculate a peak adjusted value
+        return data['peak'].max()
+
+
 def adjust(audiofile, suffix, adjustment_db, workdir):
     sign = ''
     if adjustment_db > 0:
@@ -126,12 +165,12 @@ def align(files, mode, workdir):
         os.mkdir(workdir)
     status_report_name = f'{workdir}/info.txt'
     with open(status_report_name, 'w') as report:
-        report.write(f'Align files using "{mode}" method\n')
-        report.write('Input files and props\n____\n')
+        report.write(f'alignment_mode: {mode}\n\n')
         for fname in files:
             af = sf.SoundFile(fname, 'r')
             rms, peak_level, crest, bias = audio_levels(af)
-            file_props.append([af, rms[0], peak_level[0], crest[0], bias[0]])
+            file_props.append([af, fname, rms[0], peak_level[0], crest[0],
+                               bias[0]])
             report.write(f'{fname}\n')
             report.write('\n   rms  : {0:4.1f} dB'.format(rms[0]))
             report.write('\n   peak : {0:4.1f} dB'.format(peak_level[0]))
@@ -139,59 +178,16 @@ def align(files, mode, workdir):
             report.write('\n   bias : {0:4.1f} dB'.format(bias[0]))
             report.write('\n____\n')
 
-    labels = ['file', 'rms', 'peak', 'crest', 'bias']
+    labels = ['af', 'filename', 'rms', 'peak', 'crest', 'bias']
     data = pd.DataFrame.from_records(
         file_props, columns=labels, coerce_float=True)
-
-    print(f'{data}')
-    peak_target = -1
-    rms_target = -24
-    if mode == 'rms':
-        print('rms')
-        for row in file_props:
-            rms = row[1]
-            diff = rms_target - rms
-            adjust(row[0], mode, diff, workdir)
-
-    elif mode == 'peak':
-        for row in file_props:
-            peak = row[2]
-            diff = peak_target - peak
-            adjust(row[0], mode, diff, workdir)
-
-    elif mode == 'safe':
-        print('safe')
-        # take the one with largest crest factor and use
-        # the crest to calculate a rms value (add 1 dB for safety)
-        rms_target = -data['crest'].max() + 1
-
-        for row in file_props:
-            rms = row[1]
-            diff = rms_target - rms
-            adjust(row[0], mode, diff, workdir)
-
-    elif mode == 'rms_common':
-        print('peak_common')
-        # take the one with highest peak and use
-        # that to calculate a peak adjusted value
-        rms_target = data['rms'].max()
-        for row in file_props:
-            rms = row[1]
-            diff = rms_target - rms
-            adjust(row[0], mode, diff, workdir)
-
-    elif mode == 'peak_common':
-        print('peak_common')
-        # take the one with highest peak and use
-        # that to calculate a peak adjusted value
-        peak_target = data['peak'].max()
-        for row in file_props:
-            peak = row[2]
-            diff = peak_target - peak
-            adjust(row[0], mode, diff, workdir)
-
-    for row in file_props:
-        row[0].close()
+    # do not print the SoundFile string
+    labels = labels[1:]
+    print(f'{data.to_csv(columns=labels)}')
+    # get the target for adjustment
+    target = get_target(mode, data)
+    # run the adjustment
+    data.apply(adjust_row, args=(mode, target, workdir), axis=1)
 
 
 def get_options(argv):
