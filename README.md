@@ -121,3 +121,27 @@ You can also choose the default mic for a given `AudioSource`.
 $ ./scripts/micapp.py -dd record --audiosource VOICE_CALL -t 2
 ...
 ```
+
+
+# 5. Operation: Mic Level Comparison
+
+Run the info command, and get the list of `audio_device_info` items under
+`audio_device_info_array`. Select 1 or more mics. E.g. in our case, we will
+capture from both `audio_device_info.id` 8 and 22.
+
+```
+$ ./scripts/micapp.py record --inputids 8,22  -t 5
+...
+$ ls capture*
+capture_48kHz_.name.builtin_mic.8.wav
+capture_48kHz_USB-Audio_-_HD_Web_Camera.usb_device.22.wav
+```
+
+Now compare the audio levels of both recordings:
+
+```
+$ ./scripts/audiocmp.py capture_48kHz_*
+,filename,rms,peak,crest,bias
+0,capture_48kHz_Smart_TV_Pro.builtin_mic.8.wav,-55.7,-30.09,25.61,-129.59
+1,capture_48kHz_USB-Audio_-_HD_Web_Camera.usb_device.22.wav,-3.05,0.0,3.05,-100.0
+```
