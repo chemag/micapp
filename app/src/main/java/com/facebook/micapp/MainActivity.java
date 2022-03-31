@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
-    public final static String TAG = "mic";
+    public final static String TAG = "micapp.main";
     PendingIntent mPermissionIntent;
     TextView mSpltText;;
 

@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class Player {
-    final static String TAG = "mic.play";
+    final static String TAG = "micapp.play";
 
     AudioTrack mPlayer = null;
     byte[] mSound = null;

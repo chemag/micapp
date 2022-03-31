@@ -10,7 +10,7 @@ import java.util.Vector;
 import java.util.UUID;
 
 public class AudioEffects {
-    final static String TAG = "mic.fx";
+    final static String TAG = "micapp.audiofx";
 
     int mAudioSession = -1;
     AcousticEchoCanceler mAcousticEchoCanceler = null;

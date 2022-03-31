@@ -23,7 +23,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 public class Recorder {
-    final static String TAG = "mic.record";
+    final static String TAG = "micapp.record";
     int mAudioSession = -1;
     Context mContext;
     boolean mIsRunning = false;

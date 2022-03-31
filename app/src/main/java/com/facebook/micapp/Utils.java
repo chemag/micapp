@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Vector;
 
 public class Utils {
-    final static String TAG = "mic.utils";
+    final static String TAG = "micapp.utils";
     public static double dBToFloat(double val) {
         return Math.pow(10, val / 20.0);
     }
