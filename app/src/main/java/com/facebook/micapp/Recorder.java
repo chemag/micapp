@@ -27,6 +27,7 @@ public class Recorder {
     int mAudioSession = -1;
     Context mContext;
     boolean mIsRunning = false;
+    Thread mRecordThread = null;
     String mStatusText = "";
 
 
@@ -44,7 +45,7 @@ public class Recorder {
     int checkAndRecord(int audioInputSource, String inputDevice, boolean record) {
         resetSpl();
         mIsRunning = true;
-        Thread recordThread = new Thread(new Runnable() {
+        mRecordThread = new Thread(new Runnable() {
             @Override
             public void run() {
                 if (ActivityCompat.checkSelfPermission(mContext, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
@@ -65,6 +66,8 @@ public class Recorder {
                             .build();
                 } catch(Exception ex) {
                     Log.e(TAG, "Failed to create recorder: " + ex.getMessage());
+                    mIsRunning = false;
+                    Log.e(TAG, "Exist the recording thread");
                     return;
                 }
                 final AudioRecord recorder = tmprec;
@@ -243,12 +246,13 @@ public class Recorder {
                 }
             }
         });
-        recordThread.start();
+        mRecordThread.start();
 
-
-        while (mAudioSession == -1 && mIsRunning) {
+        Log.d(TAG, "Wait for everything to start");
+        while (mAudioSession == -1 && mIsRunning && mRecordThread.isAlive()) {
             try {
-                Log.d(TAG, "Session = " + mAudioSession  + ", running = " + mIsRunning);
+                Log.d(TAG, "Session = " + mAudioSession  + ", running = " +
+                        mIsRunning + ", thread alive: " + mRecordThread.isAlive());
                 Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();
@@ -263,9 +267,10 @@ public class Recorder {
     public void stopRecording() {
         mIsRunning = false;
 
-        while (mAudioSession == -1) {
+        while (mRecordThread != null && mRecordThread.isAlive()) {
             try {
-                Log.d(TAG, "Session = " + mAudioSession  + ", running = " + mIsRunning);
+                Log.d(TAG, "Session = " + mAudioSession  + ", running = " +
+                        mIsRunning + ", thread alive: " + mRecordThread.isAlive());
                 Thread.sleep(50);
             } catch (InterruptedException e) {
                 e.printStackTrace();

@@ -177,6 +177,7 @@ def record(serial, name, audiosource=None, ids=None, timesec=10.0, debug=0):
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
     adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.raw'
+    ret, stdout, stderr = run_cmd(adb_cmd, debug)
     adb_cmd = (f'adb -s {serial} shell  am start -e rec 1 '
                f'{build_args(audiosource, ids, timesec)} '
                f'-n {APPNAME_MAIN}/.MainActivity')
@@ -192,24 +193,22 @@ def record(serial, name, audiosource=None, ids=None, timesec=10.0, debug=0):
 
     adb_cmd = f'adb -s {serial} shell ls {DUT_FILE_PATH}*.raw'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
-    output_files = re.split('[ \n]', stdout)
+    output_files = re.split('[ \n]', stdout.strip())
 
-    if len(output_files) == 0:
+    if len(output_files) == 0 or len(stdout) == 0:
+        print('No files created, most likely the configuration is not supported on the device')
+        print('check source and input settings and/or look at logcat output')
         exit(0)
 
     audiofiles = []
     for file in output_files:
-        print(f'*** PULL {file} ***')
         if file == '':
             continue
         # pull the output file
         base_file_name = os.path.basename(file).strip()
         adb_cmd = f'adb -s {serial} pull {file.strip()} {base_file_name}'
         run_cmd(adb_cmd, debug)
-
-        print(f'\n*** convert {base_file_name} ***\n')
         # convert to wav, currently only 48k
-        print(f'Open: {base_file_name} as raw file')
         audio = sf.SoundFile(base_file_name, 'r', format='RAW',
                              samplerate=48000, channels=1, subtype='PCM_16',
                              endian='FILE')
@@ -217,7 +216,6 @@ def record(serial, name, audiosource=None, ids=None, timesec=10.0, debug=0):
         print(f'Convert {base_file_name} to wav: {pcmname}')
         wav = sf.SoundFile(pcmname, 'w', format='WAV', samplerate=48000,
                            channels=1, subtype='PCM_16', endian='FILE')
-        print('Read and write')
         wav.write(audio.read())
         wav.close()
         audio.close()
