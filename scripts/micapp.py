@@ -8,6 +8,8 @@ import time
 import soundfile as sf
 import re
 
+from _version import __version__
+
 
 APPNAME_MAIN = 'com.facebook.micapp'
 DUT_FILE_PATH = '/storage/emulated/0/Android/data/com.facebook.micapp/files/'
@@ -45,8 +47,6 @@ default_values = {
     'func': 'help',
     'audiosource': None,
 }
-
-__version__ = '0.1'
 
 
 # returns info (device model and serial number) about the device where the
