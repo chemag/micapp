@@ -216,6 +216,8 @@ public class MainActivity extends AppCompatActivity {
         Bundle extras = this.getIntent().getExtras();
 
         if (extras != null) {
+            setContentView(R.layout.activity_main_clean);
+            mInfo = (TextView) findViewById(R.id.cleanInfo);
             if (extras.containsKey("inputid")) {
                 String[] splits = extras.getString("inputid").split("[,]");
                 mDeviceIds = new int[splits.length];
@@ -233,7 +235,7 @@ public class MainActivity extends AppCompatActivity {
                 mRecSec = Float.valueOf(extras.getString("timesec"));
             }
             if (extras.containsKey("nogui")) {
-                handler.postDelayed(new Runnable() {
+                Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         boolean extendedVerification = false;
@@ -244,12 +246,13 @@ public class MainActivity extends AppCompatActivity {
                         Log.d(TAG, "No gui, closing down");
                         System.exit(0);
                     }
-                }, 100);
+                });
+                t.start();
 
             }
 
             if (extras.containsKey("rec")) {
-                handler.post(new Runnable() {
+                Thread t = new Thread(new Runnable() {
                     @Override
                     public void run() {
                         Log.d(TAG, "cli recording");
@@ -258,11 +261,9 @@ public class MainActivity extends AppCompatActivity {
                         System.exit(0);
                     }
                 });
-
+                t.start();
             }
 
-            setContentView(R.layout.activity_main_clean);
-            mInfo = (TextView) findViewById(R.id.cleanInfo);
             return;
         }
 
