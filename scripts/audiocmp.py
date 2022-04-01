@@ -91,7 +91,6 @@ def audio_levels(audiofile, start=0, end=-1):
             if peak[channel] > peak_level[channel]:
                 peak_level[channel] = peak[channel]
             tmp[channel] = floatToDB(np.mean(np.square(data_)))
-            print(f'{tmp[channel]}') 
             if tmp[channel] < floor[channel]:
                 floor[channel] = round(tmp[channel], 2)
         block_counter += 1
@@ -108,7 +107,6 @@ def audio_levels(audiofile, start=0, end=-1):
             ),
             2,
         )
-        print(f'bias: { total_level[channel] / (block_counter * blocksize)}')
         rms[channel] = round(floatToDB(rms[channel]), 2)
         peak_level[channel] = round(floatToDB(peak_level[channel]), 2)
 
@@ -170,7 +168,6 @@ def adjust(audiofile, suffix, adjustment_db, workdir):
     base_file_name = os.path.basename(audiofile.name).strip()
     new_name = (f'{workdir}/{os.path.splitext(base_file_name)[0]}_'
                 f'{sign}{round(adjustment_db,2)}_{suffix}.wav')
-    print(f'new name = {new_name}')
     output = sf.SoundFile(new_name, 'w', format='WAV', samplerate=48000,
                           channels=1, subtype='PCM_16', endian='FILE')
 
