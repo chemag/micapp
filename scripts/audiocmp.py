@@ -57,7 +57,7 @@ def audio_levels(audiofile, start=0, end=-1):
     Calculates rms and max peak level in dB
     Input: soundfile, start frame, end frame
     Output: rms, peak, crest, bias, floor
-    where 
+    where
         * peak is the highest nominal value
         * rms is the total average of the squared values
         * crest is the ratios between peak and rms
@@ -87,7 +87,7 @@ def audio_levels(audiofile, start=0, end=-1):
                 data_ = data[:, channel]
             total_level[channel] += np.sum(data_)
             rms[channel] += np.mean(np.square(data_))
-            peak[channel] = max(abs(data_))            
+            peak[channel] = max(abs(data_))
             if peak[channel] > peak_level[channel]:
                 peak_level[channel] = peak[channel]
             tmp[channel] = floatToDB(np.mean(np.square(data_)))
@@ -98,7 +98,7 @@ def audio_levels(audiofile, start=0, end=-1):
     for channel in range(0, audiofile.channels):
         rms[channel] = np.sqrt(rms[channel] / block_counter)
         crest[channel] = round(peak_level[channel] / rms[channel], 2)
-        papr[channel] = round(floatToDB(peak_level[channel] /rms[channel]),2)
+        papr[channel] = round(floatToDB(peak_level[channel] / rms[channel]), 2)
         # sign is not important now
         bias[channel] = round(
             floatToDB(abs(
@@ -199,7 +199,8 @@ def align(files, mode, workdir):
             report.write('\n   floor: {0:4.1f} dB'.format(floor[0]))
             report.write('\n____\n')
 
-    labels = ['af', 'filename', 'rms', 'peak', 'crest', 'papr', 'bias', 'floor']
+    labels = ['af', 'filename', 'rms', 'peak', 'crest', 'papr', 'bias',
+              'floor']
     data = pd.DataFrame.from_records(
         file_props, columns=labels, coerce_float=True)
     # do not print the SoundFile string

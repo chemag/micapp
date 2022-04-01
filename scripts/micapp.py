@@ -147,7 +147,7 @@ def pull_info(serial, name, extended, debug=0):
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     extra = ''
     if extended:
-        extra =  '-e fxverify 1 '
+        extra = '-e fxverify 1 '
 
     adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 {extra}'
                f'-n {APPNAME_MAIN}/.MainActivity')
