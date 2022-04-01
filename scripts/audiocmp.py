@@ -71,6 +71,7 @@ def audio_levels(audiofile, start=0, end=-1):
     peak = [0] * audiofile.channels
     total_level = [0] * audiofile.channels
     crest = [0] * audiofile.channels
+    papr = [0] * audiofile.channels
     bias = [0] * audiofile.channels
     floor = [0] * audiofile.channels
     block_counter = 0
@@ -89,15 +90,16 @@ def audio_levels(audiofile, start=0, end=-1):
             peak[channel] = max(abs(data_))            
             if peak[channel] > peak_level[channel]:
                 peak_level[channel] = peak[channel]
-            tmp[channel] = floatToDB(np.mean(np.square(data_)))            
+            tmp[channel] = floatToDB(np.mean(np.square(data_)))
+            print(f'{tmp[channel]}') 
             if tmp[channel] < floor[channel]:
                 floor[channel] = round(tmp[channel], 2)
         block_counter += 1
 
     for channel in range(0, audiofile.channels):
         rms[channel] = np.sqrt(rms[channel] / block_counter)
-        crest[channel] = round(
-            floatToDB(peak_level[channel] / rms[channel]), 2)
+        crest[channel] = round(peak_level[channel] / rms[channel], 2)
+        papr[channel] = round(floatToDB(peak_level[channel] /rms[channel]),2)
         # sign is not important now
         bias[channel] = round(
             floatToDB(abs(
@@ -106,10 +108,11 @@ def audio_levels(audiofile, start=0, end=-1):
             ),
             2,
         )
+        print(f'bias: { total_level[channel] / (block_counter * blocksize)}')
         rms[channel] = round(floatToDB(rms[channel]), 2)
         peak_level[channel] = round(floatToDB(peak_level[channel]), 2)
 
-    return rms, peak_level, crest, bias, floor
+    return rms, peak_level, crest, papr, bias, floor
 
 
 MODE_CHOICES = {
@@ -149,7 +152,7 @@ def get_target(mode, data):
     elif mode == 'safe':
         # take the one with largest crest factor and use
         # the crest to calculate a rms value (add 1 dB for safety)
-        return -data['crest'].max() + 1
+        return -data['papr'].max() - 1
     elif mode == 'rms_common':
         # take the one with highest peak and use
         # that to calculate a peak adjusted value
@@ -164,13 +167,16 @@ def adjust(audiofile, suffix, adjustment_db, workdir):
     sign = ''
     if adjustment_db > 0:
         sign = '+'
-    new_name = (f'{workdir}/{os.path.splitext(audiofile.name)[0]}_'
+    base_file_name = os.path.basename(audiofile.name).strip()
+    new_name = (f'{workdir}/{os.path.splitext(base_file_name)[0]}_'
                 f'{sign}{round(adjustment_db,2)}_{suffix}.wav')
+    print(f'new name = {new_name}')
     output = sf.SoundFile(new_name, 'w', format='WAV', samplerate=48000,
                           channels=1, subtype='PCM_16', endian='FILE')
 
     amplify_and_write_file(audiofile, output, adjustment_db)
     output.close()
+    return new_name
 
 
 def align(files, mode, workdir):
@@ -183,19 +189,20 @@ def align(files, mode, workdir):
         report.write(f'alignment_mode: {mode}\n\n')
         for fname in files:
             af = sf.SoundFile(fname, 'r')
-            rms, peak_level, crest, bias, floor = audio_levels(af)
+            rms, peak_level, crest, papr, bias, floor = audio_levels(af)
             file_props.append([af, fname, rms[0], peak_level[0], crest[0],
-                               bias[0], floor[0]])
+                               papr[0], bias[0], floor[0]])
 
             report.write(f'{fname}\n')
             report.write('\n   rms  : {0:4.1f} dB'.format(rms[0]))
             report.write('\n   peak : {0:4.1f} dB'.format(peak_level[0]))
-            report.write('\n   crest: {0:4.1f} dB'.format(crest[0]))
+            report.write('\n   crest: {0:4.1f}'.format(crest[0]))
+            report.write('\n   papr: {0:4.1f} dB'.format(papr[0]))
             report.write('\n   bias : {0:4.1f} dB'.format(bias[0]))
             report.write('\n   floor: {0:4.1f} dB'.format(floor[0]))
             report.write('\n____\n')
 
-    labels = ['af', 'filename', 'rms', 'peak', 'crest', 'bias', 'floor']
+    labels = ['af', 'filename', 'rms', 'peak', 'crest', 'papr', 'bias', 'floor']
     data = pd.DataFrame.from_records(
         file_props, columns=labels, coerce_float=True)
     # do not print the SoundFile string
