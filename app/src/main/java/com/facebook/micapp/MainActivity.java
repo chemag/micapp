@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     for (AudioRecordingConfiguration config : audio_record_configs) {
                         writer.write("Effects default {\n");
+                        writer.write("  audio_source: " + Utils.audioSourceToString(mAudioSource) + "\n");
                         AudioDeviceInfo audio_device_info = config.getAudioDevice();
                         writer.write(Utils.getAudioDeviceInfo(audio_device_info, 1));
                         List<AudioEffect.Descriptor> audio_effects_descriptors = null;
