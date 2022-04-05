@@ -60,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
 
     Handler handler = new Handler();
     float mRecSec = 10.0f;
-    int  mAudiosource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
+    int  mAudioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
     int[] mDeviceIds = null;
 
     public static String[] retrieveNotGrantedPermissions(Context context) {
@@ -111,7 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 // With extened testing take default settings or cli settings and setup te routing
                 // verifying availability of hw effects
                 Log.d(TAG, "Call rec");
-                record(mAudiosource, mDeviceIds, 0);
+                record(mAudioSource, mDeviceIds, 0);
                 try {
                     Thread.sleep((long)(1000));
                 } catch (InterruptedException e) {
@@ -227,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
             }
 
             if (extras.containsKey("audiosource")) {
-                mAudiosource = Integer.valueOf(extras.getString("audiosource"));
+                mAudioSource = Integer.valueOf(extras.getString("audiosource"));
             }
 
 
@@ -256,7 +256,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d(TAG, "cli recording");
-                        record(mAudiosource, mDeviceIds, mRecSec);
+                        record(mAudioSource, mDeviceIds, mRecSec);
                         Log.d(TAG, "Exit");
                         System.exit(0);
                     }
