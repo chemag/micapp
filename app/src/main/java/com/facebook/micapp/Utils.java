@@ -119,27 +119,27 @@ public class Utils {
         switch(source) {
             case MediaRecorder.AudioSource
                     .DEFAULT:
-                return "default";
+                return "DEFAULT";
             case MediaRecorder.AudioSource.MIC:
-                return "mic";
+                return "MIC";
             case MediaRecorder.AudioSource.VOICE_UPLINK:
-                return "voice up-link";
+                return "VOICE_UPLINK";
             case MediaRecorder.AudioSource.VOICE_DOWNLINK:
-                return "voice down-link";
+                return "VOICE_DOWNLINK";
             case MediaRecorder.AudioSource.VOICE_CALL:
-                return "call";
+                return "VOICE_CALL";
             case MediaRecorder.AudioSource.CAMCORDER:
-                return "camcorder";
+                return "CAMCORDER";
             case MediaRecorder.AudioSource.VOICE_RECOGNITION:
-                return "voice recognition";
+                return "VOICE_RECOGNITION";
             case MediaRecorder.AudioSource.VOICE_COMMUNICATION:
-                return "voice communication";
+                return "VOICE_COMMUNICATION";
             case MediaRecorder.AudioSource.REMOTE_SUBMIX:
-                return "remote submix";
+                return "REMOTE_SUBMIX";
             case MediaRecorder.AudioSource.UNPROCESSED:
-                return "unprocessed";
+                return "UNPROCESSED";
             case MediaRecorder.AudioSource.VOICE_PERFORMANCE:
-                return "performance";
+                return "VOICE_PERFORMANCE";
             default:
                 return source  + " is no source";
 
