@@ -233,48 +233,64 @@ public class AudioEffects {
         return "unknown";
     }
 
-    public String toString() {
+    public String toString(int indent) {
+        String tab = Utils.getIndentation(indent);
         StringBuilder str = new StringBuilder();
         AudioEffect.Descriptor[] descriptor_array = AudioEffect.queryEffects();
-        str.append("audio_effect_descriptors {\n");
+        str.append(tab + "audio_effect_descriptors {\n");
         for (AudioEffect.Descriptor descriptor: descriptor_array) {
-            str.append("  descriptor {\n");
-            str.append("    connectMode: \"" + descriptor.connectMode + "\"\n");
-            str.append("    implementor: \"" + descriptor.implementor + "\"\n");
-            str.append("    name: \"" + descriptor.name + "\"\n");
-            str.append("    type: \"" + typeToString(descriptor.type) + "\"\n");
-            str.append("    uuid: \"" + descriptor.uuid.toString() + "\"\n");
-            str.append("  }\n");
+            indent += 1;
+            tab = Utils.getIndentation(indent);
+            str.append(tab + "descriptor {\n");
+            indent += 1;
+            tab = Utils.getIndentation(indent);
+            str.append(tab + "connectMode: \"" + descriptor.connectMode + "\"\n");
+            str.append(tab + "implementor: \"" + descriptor.implementor + "\"\n");
+            str.append(tab + "name: \"" + descriptor.name + "\"\n");
+            str.append(tab + "type: \"" + typeToString(descriptor.type) + "\"\n");
+            str.append(tab + "uuid: \"" + descriptor.uuid.toString() + "\"\n");
+            indent -= 1;
+            tab = Utils.getIndentation(indent);
+            str.append(tab + "}\n");
+            indent -= 1;
+            tab = Utils.getIndentation(indent);
         }
-        str.append("}\n");
-        str.append("audio_effects {\n");
-        str.append("  aec_available: " + isAecAvailable() + "\n");
-        str.append("  agc_available: " + isAgcAvailable() + "\n");
-        str.append("  ns_available: " + isNsAvailable() + "\n");
-        str.append("  aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
-        str.append("  agc_allocated: " + (mAutomaticGainControl != null) + "\n");
-        str.append("  ns_allocated: " + (mNoiseSuppressor != null) + "\n");
-        str.append("  aec_enabled: " + isAecEnabled() + "\n");
-        str.append("  agc_enabled: " + isAgcEnabled() + "\n");
-        str.append("  ns_enabled: " + isNsEnabled() + "\n");
-        str.append("}\n");
+        str.append(tab + "}\n");
+        str.append(tab + "audio_effects {\n");
+        indent += 1;
+        tab = Utils.getIndentation(indent);
+        str.append(tab + "aec_available: " + isAecAvailable() + "\n");
+        str.append(tab + "agc_available: " + isAgcAvailable() + "\n");
+        str.append(tab + "ns_available: " + isNsAvailable() + "\n");
+        str.append(tab + "aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
+        str.append(tab + "agc_allocated: " + (mAutomaticGainControl != null) + "\n");
+        str.append(tab + "ns_allocated: " + (mNoiseSuppressor != null) + "\n");
+        str.append(tab + "aec_enabled: " + isAecEnabled() + "\n");
+        str.append(tab + "agc_enabled: " + isAgcEnabled() + "\n");
+        str.append(tab + "ns_enabled: " + isNsEnabled() + "\n");
+        indent -= 1;
+        tab = Utils.getIndentation(indent);
+        str.append(tab + "}\n");
         return str.toString();
     }
 
     public String getStatusAsString(int indent) {
         String tab = Utils.getIndentation(indent);
-        String tab2 = Utils.getIndentation(indent);
         StringBuilder str = new StringBuilder();
         str.append(tab + "audio_effects {\n");
-        str.append(tab2 + "  aec_available: " + isAecAvailable() + "\n");
-        str.append(tab2 + "  agc_available: " + isAgcAvailable() + "\n");
-        str.append(tab2 + "  ns_available: " + isNsAvailable() + "\n");
-        str.append(tab2 + "  aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
-        str.append(tab2 + "  agc_allocated: " + (mAutomaticGainControl != null) + "\n");
-        str.append(tab2 + "  ns_allocated: " + (mNoiseSuppressor != null) + "\n");
-        str.append(tab2 + "  aec_enabled: " + isAecEnabled() + "\n");
-        str.append(tab2 + "  agc_enabled: " + isAgcEnabled() + "\n");
-        str.append(tab2 + "  ns_enabled: " + isNsEnabled() + "\n");
+        indent += 1;
+        tab = Utils.getIndentation(indent);
+        str.append(tab + "aec_available: " + isAecAvailable() + "\n");
+        str.append(tab + "agc_available: " + isAgcAvailable() + "\n");
+        str.append(tab + "ns_available: " + isNsAvailable() + "\n");
+        str.append(tab + "aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
+        str.append(tab + "agc_allocated: " + (mAutomaticGainControl != null) + "\n");
+        str.append(tab + "ns_allocated: " + (mNoiseSuppressor != null) + "\n");
+        str.append(tab + "aec_enabled: " + isAecEnabled() + "\n");
+        str.append(tab + "agc_enabled: " + isAgcEnabled() + "\n");
+        str.append(tab + "ns_enabled: " + isNsEnabled() + "\n");
+        indent -= 1;
+        tab = Utils.getIndentation(indent);
         str.append(tab + "}\n");
         return str.toString();
     }

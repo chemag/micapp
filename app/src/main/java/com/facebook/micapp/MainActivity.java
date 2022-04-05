@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
             writer.write("micapp\n\n");
             writer.write(Utils.getAllAudioDeviceInfo(this));
             writer.write(Utils.getAllMicrophoneInfo(this));
-            writer.write(mAudioEffects.toString());
+            writer.write(mAudioEffects.toString(1));
 
             if (extendedTesting) {
                 int audioSessionId = -1;
@@ -124,10 +124,13 @@ public class MainActivity extends AppCompatActivity {
                     writer.write("Failed to start recording");
                 } else {
                     for (AudioRecordingConfiguration config : audio_record_configs) {
-                        writer.write("Effects default {\n");
+                        writer.write("effects_operation {\n");
+                        // print info about AudioSource
                         writer.write("  audio_source: " + Utils.audioSourceToString(mAudioSource) + "\n");
+                        // print info about AudioDeviceInfo
                         AudioDeviceInfo audio_device_info = config.getAudioDevice();
                         writer.write(Utils.getAudioDeviceInfo(audio_device_info, 1));
+                        // print info about any available AudioEffect.Descriptor
                         List<AudioEffect.Descriptor> audio_effects_descriptors = null;
                         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
                             audio_effects_descriptors = config.getClientEffects();
@@ -135,24 +138,30 @@ public class MainActivity extends AppCompatActivity {
                                 writer.write(Utils.getAudioEffectInfo(descr, 1));
                             }
                         }
-                        writer.write("}\n");
+                        // create audio effects
                         audioSessionId = config.getClientAudioSessionId();
                         Log.d(TAG, "Enable effects: " + audioSessionId);
                         mAudioEffects.createAudioEffects(audioSessionId);
-                        writer.write("Effects instantiated {\n");
-                        writer.write(mAudioEffects.getStatusAsString(1));
+                        // print info about audio effects
+                        writer.write("  created {\n");
+                        writer.write(mAudioEffects.getStatusAsString(2));
+                        // enable audio effects
                         mAudioEffects.setAecStatus(true);
                         mAudioEffects.setAgcStatus(true);
                         mAudioEffects.setNsStatus(true);
-                        writer.write("}\n");
-                        writer.write("Effects enabled {\n");
-                        writer.write(mAudioEffects.getStatusAsString(1));
+                        writer.write("  }\n");
+                        // print info about audio effects
+                        writer.write("  enabled {\n");
+                        writer.write(mAudioEffects.getStatusAsString(2));
+                        // disable audio effects
                         mAudioEffects.setAecStatus(false);
                         mAudioEffects.setAgcStatus(false);
                         mAudioEffects.setNsStatus(false);
-                        writer.write("}\n");
-                        writer.write("Effects disabled {\n");
-                        writer.write(mAudioEffects.getStatusAsString(1));
+                        writer.write("  }\n");
+                        // print info about audio effects
+                        writer.write("  disabled {\n");
+                        writer.write(mAudioEffects.getStatusAsString(2));
+                        writer.write("  }\n");
                         writer.write("}\n");
                     }
                 }

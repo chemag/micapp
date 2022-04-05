@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Vector;
 
 public class Utils {
-    final static int indentWidth = 4;
+    final static int mIndentWidth = 2;
     final static String TAG = "micapp.utils";
     public static double dBToFloat(double val) {
         return Math.pow(10, val / 20.0);
@@ -310,7 +310,7 @@ public class Utils {
     public static String getIndentation(int indent) {
         String tab = "";
         if (indent > 0){
-            tab = String.format("%" + (indent * indentWidth) + "s", ' ');
+            tab = String.format("%" + (indent * mIndentWidth) + "s", ' ');
         }
         return tab;
     }
@@ -322,15 +322,17 @@ public class Utils {
     public static String getAudioEffectInfo(AudioEffect.Descriptor audio_effect_descriptor, int indent) {
         StringBuilder str = new StringBuilder();
         String tab = getIndentation(indent);
-        String tab2 = getIndentation(indent + 1);
-
         str.append(tab + "audio_effect_descriptor {\n");
-        str.append(tab2 + "name: \"" + audio_effect_descriptor.name + "\"\n");
-        str.append(tab2 + "impl: \"" + audio_effect_descriptor.implementor + "\"\n");
-        str.append(tab2 + "uuid: \"" + audio_effect_descriptor.uuid + "\"\n");
-        str.append(tab2 + "type: \"" + audio_effect_descriptor.type + "\"\n");
+        indent += 1;
+        tab = getIndentation(indent);
+        str.append(tab + "name: \"" + audio_effect_descriptor.name + "\"\n");
+        str.append(tab + "impl: \"" + audio_effect_descriptor.implementor + "\"\n");
+        str.append(tab + "uuid: \"" + audio_effect_descriptor.uuid + "\"\n");
+        str.append(tab + "type: \"" + audio_effect_descriptor.type + "\"\n");
         str.append(tab + "connect mode: \"" + audio_effect_descriptor.connectMode + "\"\n");
-        str.append("}\n");
+        indent -= 1;
+        tab = getIndentation(indent);
+        str.append(tab + "}\n");
         return str.toString();
     }
 
@@ -342,72 +344,82 @@ public class Utils {
     public static String getAudioDeviceInfo(AudioDeviceInfo audio_device_info, int indent) {
         StringBuilder str = new StringBuilder();
         String tab =  getIndentation(indent);
-        String tab2 =  getIndentation(indent + 1);
-        String tab3 =  getIndentation(indent + 2);
         str.append(tab + "audio_device_info {\n");
-        str.append(tab2 + "address: \"" + audio_device_info.getAddress() + "\"\n");
+        indent += 1;
+        tab = getIndentation(indent);
+        str.append(tab + "address: \"" + audio_device_info.getAddress() + "\"\n");
         if (android.os.Build.VERSION.SDK_INT >= 31) {
             List<AudioDescriptor> audio_descriptors = audio_device_info.getAudioDescriptors();
             for (AudioDescriptor audio_descriptor: audio_descriptors) {
-                str.append(tab2 + "audio_descriptor {\n");
-                str.append(tab3 + "descriptor: \"" + audio_descriptor.getDescriptor() + "\"\n");
-                str.append(tab3 + "encapsulation_type: " + audio_descriptor.getEncapsulationType() + "\n");
-                str.append(tab3 + "standard: " + audio_descriptor.getStandard() + "\n");
-                str.append(tab3 + "hash_code: " + audio_descriptor.hashCode() + "\n");
-                str.append(tab3 + "string: \"" + audio_descriptor.toString() + "\"\n");
-                str.append(tab2 + "}\n");
+                str.append(tab + "audio_descriptor {\n");
+                indent += 1;
+                tab = getIndentation(indent);
+                str.append(tab + "descriptor: \"" + audio_descriptor.getDescriptor() + "\"\n");
+                str.append(tab + "encapsulation_type: " + audio_descriptor.getEncapsulationType() + "\n");
+                str.append(tab + "standard: " + audio_descriptor.getStandard() + "\n");
+                str.append(tab + "hash_code: " + audio_descriptor.hashCode() + "\n");
+                str.append(tab + "string: \"" + audio_descriptor.toString() + "\"\n");
+                indent -= 1;
+                tab = getIndentation(indent);
+                str.append(tab + "}\n");
             }
             List<AudioProfile> audio_profiles = audio_device_info.getAudioProfiles();
             for (AudioProfile audio_profile: audio_profiles) {
-                str.append(tab2 + "audio_profile {\n");
+                str.append(tab + "audio_profile {\n");
+                indent += 1;
+                tab = getIndentation(indent);
                 for (int channel_index_mask: audio_profile.getChannelIndexMasks()) {
-                    str.append(tab3 + "channel_index_mask: " + channel_index_mask + "\n");
+                    str.append(tab + "channel_index_mask: " + channel_index_mask + "\n");
                 }
                 for (int channel_mask: audio_profile.getChannelMasks()) {
-                    str.append(tab3 + "channel_mask: " + channel_mask + "\n");
+                    str.append(tab + "channel_mask: " + channel_mask + "\n");
                 }
-                str.append(tab3 + "format: " + audio_profile.getFormat() + "\n");
-                str.append(tab3 + "encapsulation_type: " + audio_profile.getEncapsulationType() + "\n");
-                str.append(tab3 + "format: " + audio_profile.getFormat() + "\n");
+                str.append(tab + "format: " + audio_profile.getFormat() + "\n");
+                str.append(tab + "encapsulation_type: " + audio_profile.getEncapsulationType() + "\n");
+                str.append(tab + "format: " + audio_profile.getFormat() + "\n");
                 for (int sample_rate: audio_profile.getSampleRates()) {
-                    str.append(tab3 + "sample_rate: " + sample_rate + "\n");
+                    str.append(tab + "sample_rate: " + sample_rate + "\n");
                 }
-                str.append(tab3 + "hash_code: " + audio_profile.hashCode() + "\n");
-                str.append(tab3 + "string: \"" + audio_profile.toString() + "\"\n");
-                str.append(tab2 + "}\n");
+                str.append(tab + "hash_code: " + audio_profile.hashCode() + "\n");
+                str.append(tab + "string: \"" + audio_profile.toString() + "\"\n");
+                indent -= 1;
+                tab = getIndentation(indent);
+                str.append(tab + "}\n");
             }
         }
         for (int channel_count: audio_device_info.getChannelCounts()) {
-            str.append(tab2 + "channel_count: " + channel_count + "\n");
+            str.append(tab + "channel_count: " + channel_count + "\n");
         }
         for (int channel_index_mask: audio_device_info.getChannelIndexMasks()) {
-            str.append(tab2 + "channel_index_mask: " + channel_index_mask + "\n");
+            str.append(tab + "channel_index_mask: " + channel_index_mask + "\n");
         }
         for (int channel_mask: audio_device_info.getChannelMasks()) {
-            str.append(tab2 + "channel_mask: " + channel_mask + "\n");
+            str.append(tab + "channel_mask: " + channel_mask + "\n");
         }
         if (android.os.Build.VERSION.SDK_INT >= 30) {
             for (int encapsulation_metadata_type: audio_device_info.getEncapsulationMetadataTypes()) {
-                str.append(tab2 + "encapsulation_metadata_type: " + encapsulation_metadata_type + "\n");
+                str.append(tab + "encapsulation_metadata_type: " + encapsulation_metadata_type + "\n");
             }
             for (int encapsulation_mode: audio_device_info.getEncapsulationModes()) {
-                str.append(tab2 + "encapsulation_mode: " + encapsulation_mode + "\n");
+                str.append(tab + "encapsulation_mode: " + encapsulation_mode + "\n");
             }
         }
         for (int encoding: audio_device_info.getEncodings()) {
-            str.append(tab2 + "encoding: " + encoding + "\n");
-            str.append(tab2 + "encoding_str: \"" + Utils.audioFormatEncodingToString(encoding) + "\"\n");
+            str.append(tab + "encoding: " + encoding + "\n");
+            str.append(tab + "encoding_str: \"" + Utils.audioFormatEncodingToString(encoding) + "\"\n");
         }
-        str.append(tab2 + "id: " + audio_device_info.getId() + "\n");
-        str.append(tab2 + "product_name: \"" + audio_device_info.getProductName() + "\"\n");
+        str.append(tab + "id: " + audio_device_info.getId() + "\n");
+        str.append(tab + "product_name: \"" + audio_device_info.getProductName() + "\"\n");
         for (int sample_rate: audio_device_info.getSampleRates()) {
-            str.append(tab2 + "sample_rate: " + sample_rate + "\n");
+            str.append(tab + "sample_rate: " + sample_rate + "\n");
         }
-        str.append(tab2 + "type: " + audio_device_info.getType() + "\n");
-        str.append(tab2 + "type_str: \"" + Utils.audioDeviceTypeToString(audio_device_info.getType()) + "\"\n");
-        str.append(tab2 + "hash_code: " + audio_device_info.hashCode() + "\n");
-        str.append(tab2 + "is_sink: " + audio_device_info.isSink() + "\n");
-        str.append(tab2 + "is_source: " + audio_device_info.isSource() + "\n");
+        str.append(tab + "type: " + audio_device_info.getType() + "\n");
+        str.append(tab + "type_str: \"" + Utils.audioDeviceTypeToString(audio_device_info.getType()) + "\"\n");
+        str.append(tab + "hash_code: " + audio_device_info.hashCode() + "\n");
+        str.append(tab + "is_sink: " + audio_device_info.isSink() + "\n");
+        str.append(tab + "is_source: " + audio_device_info.isSource() + "\n");
+        indent -= 1;
+        tab = getIndentation(indent);
         str.append(tab + "}\n");
         return str.toString();
     }
@@ -420,14 +432,17 @@ public class Utils {
         StringBuilder str = new StringBuilder();
         Log.d(TAG, "Build indenc: " + indent);
         String tab = getIndentation(indent);
-        String tab2 = getIndentation(indent);
         final AudioManager audio_manager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         AudioDeviceInfo[] audio_device_info_array = audio_manager.getDevices(AudioManager.GET_DEVICES_INPUTS);
         str.append(tab + "audio_device_info_array {\n");
-        str.append(tab2 + "size: " + audio_device_info_array.length + "\n");
+        indent += 1;
+        tab = getIndentation(indent);
+        str.append(tab + "size: " + audio_device_info_array.length + "\n");
         for (AudioDeviceInfo audio_device_info : audio_device_info_array) {
             str.append(getAudioDeviceInfo(audio_device_info, 1));
         }
+        indent -= 1;
+        tab = getIndentation(indent);
         str.append(tab + "}\n");
 
         return str.toString();
