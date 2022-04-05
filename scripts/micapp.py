@@ -310,9 +310,9 @@ def main(argv):
             model = list(model.values())[0]
 
     if options.func == 'info':
-        pull_info(options.serial, model, options.extended, options.debug)
+        pull_info(serial, model, options.extended, options.debug)
     if options.func == 'record':
-        record(options.serial, model, options.audiosource, options.inputids,
+        record(serial, model, options.audiosource, options.inputids,
                options.timesec, options.debug)
 
 
