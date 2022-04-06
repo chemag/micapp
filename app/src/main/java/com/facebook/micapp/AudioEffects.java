@@ -256,25 +256,11 @@ public class AudioEffects {
             tab = Utils.getIndentation(indent);
         }
         str.append(tab + "}\n");
-        str.append(tab + "audio_effects {\n");
-        indent += 1;
-        tab = Utils.getIndentation(indent);
-        str.append(tab + "aec_available: " + isAecAvailable() + "\n");
-        str.append(tab + "agc_available: " + isAgcAvailable() + "\n");
-        str.append(tab + "ns_available: " + isNsAvailable() + "\n");
-        str.append(tab + "aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
-        str.append(tab + "agc_allocated: " + (mAutomaticGainControl != null) + "\n");
-        str.append(tab + "ns_allocated: " + (mNoiseSuppressor != null) + "\n");
-        str.append(tab + "aec_enabled: " + isAecEnabled() + "\n");
-        str.append(tab + "agc_enabled: " + isAgcEnabled() + "\n");
-        str.append(tab + "ns_enabled: " + isNsEnabled() + "\n");
-        indent -= 1;
-        tab = Utils.getIndentation(indent);
-        str.append(tab + "}\n");
+        str.append(getStatusAsString(indent, false));
         return str.toString();
     }
 
-    public String getStatusAsString(int indent) {
+    public String getStatusAsString(int indent, boolean full) {
         String tab = Utils.getIndentation(indent);
         StringBuilder str = new StringBuilder();
         str.append(tab + "audio_effects {\n");
@@ -283,12 +269,14 @@ public class AudioEffects {
         str.append(tab + "aec_available: " + isAecAvailable() + "\n");
         str.append(tab + "agc_available: " + isAgcAvailable() + "\n");
         str.append(tab + "ns_available: " + isNsAvailable() + "\n");
-        str.append(tab + "aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
-        str.append(tab + "agc_allocated: " + (mAutomaticGainControl != null) + "\n");
-        str.append(tab + "ns_allocated: " + (mNoiseSuppressor != null) + "\n");
-        str.append(tab + "aec_enabled: " + isAecEnabled() + "\n");
-        str.append(tab + "agc_enabled: " + isAgcEnabled() + "\n");
-        str.append(tab + "ns_enabled: " + isNsEnabled() + "\n");
+        if (full) {
+            str.append(tab + "aec_allocated: " + (mAcousticEchoCanceler != null) + "\n");
+            str.append(tab + "agc_allocated: " + (mAutomaticGainControl != null) + "\n");
+            str.append(tab + "ns_allocated: " + (mNoiseSuppressor != null) + "\n");
+            str.append(tab + "aec_enabled: " + isAecEnabled() + "\n");
+            str.append(tab + "agc_enabled: " + isAgcEnabled() + "\n");
+            str.append(tab + "ns_enabled: " + isNsEnabled() + "\n");
+        }
         indent -= 1;
         tab = Utils.getIndentation(indent);
         str.append(tab + "}\n");

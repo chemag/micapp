@@ -105,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
             writer.write("micapp\n\n");
             writer.write(Utils.getAllAudioDeviceInfo(this));
             writer.write(Utils.getAllMicrophoneInfo(this));
-            writer.write(mAudioEffects.toString(1));
+            writer.write(mAudioEffects.toString(0));
 
             if (extendedTesting) {
                 int audioSessionId = -1;
@@ -145,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
                         mAudioEffects.createAudioEffects(audioSessionId);
                         // print info about audio effects
                         writer.write("  created {\n");
-                        writer.write(mAudioEffects.getStatusAsString(2));
+                        writer.write(mAudioEffects.getStatusAsString(2, true));
                         // enable audio effects
                         mAudioEffects.setAecStatus(true);
                         mAudioEffects.setAgcStatus(true);
@@ -153,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                         writer.write("  }\n");
                         // print info about audio effects
                         writer.write("  enabled {\n");
-                        writer.write(mAudioEffects.getStatusAsString(2));
+                        writer.write(mAudioEffects.getStatusAsString(2, true));
                         // disable audio effects
                         mAudioEffects.setAecStatus(false);
                         mAudioEffects.setAgcStatus(false);
@@ -161,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                         writer.write("  }\n");
                         // print info about audio effects
                         writer.write("  disabled {\n");
-                        writer.write(mAudioEffects.getStatusAsString(2));
+                        writer.write(mAudioEffects.getStatusAsString(2, true));
                         writer.write("  }\n");
                         writer.write("}\n");
                     }
