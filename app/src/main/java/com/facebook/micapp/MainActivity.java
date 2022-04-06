@@ -184,10 +184,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /* Special use case,
-          1) start record
-          2) playback a sound
-          3) close record
-        */
+       1) start record
+       2) playback a sound
+       3) close record
+     */
     public void recordAndPlayback(int audioSource, int[] inputIds, int soundId, float secs) {
         int audioSessionId = -1;
         // With extened testing take default settings or cli settings and setup te routing
@@ -236,7 +236,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void record(int audioSource, int[] inputIds, float secs) {
         mInfo.append("Start record");
-        mInfo.append("\nAudio source: " + audioSource + " for " + secs + " secs");
+        mInfo.append("\nAudio source: " + audioSource + " seconds: " + secs);
         Vector<String> inputs = Utils.lookupIdsStrings(inputIds, this);
         Vector<Recorder> recorders = new Vector<>();
         for (String input: inputs) {
@@ -309,7 +309,6 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 t.start();
-
             }
 
             if (extras.containsKey("rec")) {

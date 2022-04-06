@@ -54,6 +54,7 @@ SOUNDS = {
     'chirp': '100ms 200Hz to 1200Hz',
 }
 
+
 # returns info (device model and serial number) about the device where the
 # test will be run
 def get_device_info(serial_inp, debug=0):
@@ -182,7 +183,8 @@ def pull_info(serial, name, extended, debug=0):
         print(f'Data also available in {filename}')
 
 
-def record(serial, name, audiosource=None, ids=None, timesec=10.0, playsound=None, debug=0):
+def record(serial, name, audiosource=None, ids=None, timesec=10.0,
+           playsound=None, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
