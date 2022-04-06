@@ -202,6 +202,14 @@ $ ./scripts/micapp.py -dd record --audiosource VOICE_CALL -t 2
 ```
 
 
+Adding `--sound XXX` will start playback while recording.
+
+```
+$ ./scripts/micapp.py record --sound chirp
+...
+```
+
+
 # 5. Operation: Mic Level Comparison
 
 Run the info command, and get the list of `audio_device_info` items under
