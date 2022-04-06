@@ -3,6 +3,7 @@ package com.facebook.micapp;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.media.AudioAttributes;
 import android.media.AudioDeviceInfo;
 import android.media.AudioManager;
 import android.media.AudioRecordingConfiguration;
@@ -182,10 +183,60 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /* Special use case,
+          1) start record
+          2) playback a sound
+          3) close record
+        */
+    public void recordAndPlayback(int audioSource, int[] inputIds, int soundId, float secs) {
+        int audioSessionId = -1;
+        // With extened testing take default settings or cli settings and setup te routing
+        // verifying availability of hw effects
+        Log.d(TAG, "Call rec");
+        record(mAudioSource, mDeviceIds, 0);
+        try {
+            Thread.sleep((long)(1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, "Get audio manager");
+        AudioManager audio_manager = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+        List<AudioRecordingConfiguration> audio_record_configs = audio_manager.getActiveRecordingConfigurations();
+        if (audio_record_configs.size() == 0) {
+            Log.e(TAG, "Failed to start recording");
+        } else {
+            for (AudioRecordingConfiguration config : audio_record_configs) {
+                // Try to disable aec if present
+                AudioDeviceInfo audio_device_info = config.getAudioDevice();
+                List<AudioEffect.Descriptor> audio_effects_descriptors = null;
+                audioSessionId = config.getClientAudioSessionId();
+                Log.d(TAG, "Enable effects: " + audioSessionId);
+                mAudioEffects.createAudioEffects(audioSessionId);
+                mAudioEffects.setAecStatus(false);
+                mAudioEffects.setNsStatus(false);
+            }
+        }
+
+        try {
+            Thread.sleep(500);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        mAudioPlayer.playSound(soundId,  AudioAttributes.USAGE_MEDIA, AudioAttributes.CONTENT_TYPE_MUSIC);
+
+        try {
+            Log.d(TAG, "Sleep for " + secs);
+            Thread.sleep((long)(secs * 1000));
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
+    }
 
     public void record(int audioSource, int[] inputIds, float secs) {
         mInfo.append("Start record");
-        mInfo.append("\nAudio source: "+ audioSource + " for " + secs + " secs");
+        mInfo.append("\nAudio source: " + audioSource + " for " + secs + " secs");
         Vector<String> inputs = Utils.lookupIdsStrings(inputIds, this);
         Vector<Recorder> recorders = new Vector<>();
         for (String input: inputs) {
@@ -266,9 +317,27 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void run() {
                         Log.d(TAG, "cli recording");
-                        record(mAudioSource, mDeviceIds, mRecSec);
-                        Log.d(TAG, "Exit");
-                        System.exit(0);
+                        if (extras.containsKey("sound")) {
+                            mRecSec = 3.0f;
+                            if (extras.containsKey("timesec")) {
+                                mRecSec = Float.valueOf(extras.getString("timesec"));
+                            }
+                            String sound = extras.getString("sound");
+                            int id = R.raw.voices_48khz_s16pcm;
+                            if (sound.toLowerCase().equals("noise")) {
+                                id = R.raw.noise_48k_300ms;
+                            } else if (sound.toLowerCase().equals("chirp")) {
+                                id = R.raw.chirp_48k_300ms;
+                            }
+                            Log.d(TAG, "Call rec and play: sleep = " + mRecSec);
+                            recordAndPlayback(mAudioSource, mDeviceIds, id, mRecSec);
+                            Log.d(TAG, "Exit");
+                            System.exit(0);
+                        } else {
+                            record(mAudioSource, mDeviceIds, mRecSec);
+                            Log.d(TAG, "Exit");
+                            System.exit(0);
+                        }
                     }
                 });
                 t.start();
