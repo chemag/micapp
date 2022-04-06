@@ -47,7 +47,7 @@ BUILD SUCCESSFUL in 2s
 After installing the app, run:
 
 ```
-./scripts/micapp.py info
+$ ./scripts/micapp.py info
 micapp
 
 audio_device_info_array {
@@ -90,7 +90,6 @@ audio_effects {
   aec_available: false
   agc_available: false
   ns_available: false
-  ...
 }
 
 __________________
@@ -99,6 +98,86 @@ Data also available in micapp_info_device_name.txt
 ```
 
 Note that the output contains 4 different Sections.
+* (1) audio devices (`AudioDeviceInfo` array)
+* (2) microphones (`MicrophoneInfo` array)
+* (3) audio effect descriptors (`AudioEffect.Descriptor` array)
+* (4) audio effects available
+
+You can get extra output using the "`--extended`" switch:
+* (5) audio effects operation (including used `AudioSource` and the
+  corresponding default "`AudioDeviceInfo`"
+
+```
+$ ./scripts/micapp.py info --extended
+...
+audio_effects {
+  aec_available: true
+  agc_available: true
+  ns_available: true
+}
+
+effects_operation {
+  audio_source: VOICE_COMMUNICATION
+  audio_device_info {
+    address: "bottom"
+    channel_count: 2
+    channel_count: 16
+    channel_index_mask: 65535
+    channel_mask: 12
+    encoding: 2
+    encoding_str: "pcm_16bit"
+    encoding: 4
+    encoding_str: "pcm_float"
+    id: 9
+    product_name: "frodo"
+    sample_rate: 32000
+    type: 15
+    type_str: "builtin mic"
+    hash_code: 40
+    is_sink: false
+    is_source: true
+  }
+  created {
+    audio_effects {
+      aec_available: true
+      agc_available: true
+      ns_available: true
+      aec_allocated: true
+      agc_allocated: true
+      ns_allocated: true
+      aec_enabled: false
+      agc_enabled: false
+      ns_enabled: false
+    }
+  }
+  enabled {
+    audio_effects {
+      aec_available: true
+      agc_available: true
+      ns_available: true
+      aec_allocated: true
+      agc_allocated: true
+      ns_allocated: true
+      aec_enabled: true
+      agc_enabled: true
+      ns_enabled: true
+    }
+  }
+  disabled {
+    audio_effects {
+      aec_available: true
+      agc_available: true
+      ns_available: true
+      aec_allocated: true
+      agc_allocated: true
+      ns_allocated: true
+      aec_enabled: false
+      agc_enabled: false
+      ns_enabled: false
+    }
+  }
+}
+```
 
 
 # 4. Operation: Mic Recording
