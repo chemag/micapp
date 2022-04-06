@@ -2,7 +2,9 @@ package com.facebook.micapp;
 
 import android.content.Context;
 import android.media.AudioAttributes;
+import android.media.AudioDeviceInfo;
 import android.media.AudioFormat;
+import android.media.AudioManager;
 import android.media.AudioTrack;
 import android.util.Log;
 
@@ -20,13 +22,15 @@ public class Player {
     }
 
     void playSound() {
-        int usage = AudioAttributes.USAGE_VOICE_COMMUNICATION;
-        int type = AudioAttributes.CONTENT_TYPE_SPEECH;
+        playSound(R.raw.voices_48khz_s16pcm,  AudioAttributes.USAGE_VOICE_COMMUNICATION, AudioAttributes.CONTENT_TYPE_SPEECH);
+    }
+
+    void playSound(int soundId, int usage, int type) {
         int samplerate = 48000;
         int buffersize = AudioTrack.getMinBufferSize(
                 samplerate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT);
         if (mSound == null) {
-            InputStream is = mContext.getResources().openRawResource(R.raw.voices_48khz_s16pcm);
+            InputStream is = mContext.getResources().openRawResource(soundId);
             int size;
             int read = 0;
             try {
@@ -56,6 +60,9 @@ public class Player {
                                 .setBufferSizeInBytes(buffersize)
                                 .setPerformanceMode(AudioTrack.PERFORMANCE_MODE_LOW_LATENCY)
                                 .build();
+                //Speaker playback
+                setPreferredDevice();
+
                 int played = 0;
                 player.play();
 
@@ -88,6 +95,17 @@ public class Player {
         });
         t.start();
 
+
+    }
+
+    private void setPreferredDevice() {
+        final AudioManager audio_manager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        AudioDeviceInfo[] audio_device_info_array = audio_manager.getDevices(AudioManager.GET_DEVICES_OUTPUTS);
+
+        for (AudioDeviceInfo audio_device_info : audio_device_info_array) {
+            Log.d(TAG, "address:" +  audio_device_info.getAddress() + ", name: " + audio_device_info.getProductName());
+
+        }
 
     }
 }

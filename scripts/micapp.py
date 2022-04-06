@@ -16,7 +16,7 @@ DUT_FILE_PATH = '/storage/emulated/0/Android/data/com.facebook.micapp/files/'
 FUNC_CHOICES = {
     'help': 'show help options',
     'info': 'provide audio uplink',
-    'record': 'record an audioclip',
+    'record': 'record an audioclip'
 }
 
 AUDIO_SOURCE_CHOICES = {
@@ -44,6 +44,12 @@ default_values = {
     'debug': 0,
     'func': 'help',
     'audiosource': None,
+}
+
+SOUNDS = {
+    'voice': '2.4 seconds of male voice',
+    'noise': '100ms pink noise',
+    'chirp': '100ms 200Hz to 1200Hz',
 }
 
 __version__ = '0.1'
@@ -177,14 +183,15 @@ def pull_info(serial, name, extended, debug=0):
         print(f'Data also available in {filename}')
 
 
-def record(serial, name, audiosource=None, ids=None, timesec=10.0, debug=0):
+def record(serial, name, audiosource=None, ids=None, timesec=10.0, playsound=None, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
     adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.raw'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
+
     adb_cmd = (f'adb -s {serial} shell  am start -e rec 1 '
-               f'{build_args(audiosource, ids, timesec)} '
+               f'{build_args(audiosource, ids, timesec, playsound)} '
                f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     time.sleep(1)
@@ -232,15 +239,17 @@ def record(serial, name, audiosource=None, ids=None, timesec=10.0, debug=0):
         print(f'{name}')
 
 
-def build_args(audiosource, inputids, timesec):
+def build_args(audiosource, inputids, timesec, sound):
     ret = ''
     if audiosource is not None:
         audiosource_int = AUDIO_SOURCE_CHOICES[audiosource][0]
         ret = f'{ret} -e audiosource {audiosource_int} '
     if inputids is not None:
         ret = f'{ret} -e inputid {inputids} '
-    if timesec is not None:
+    if timesec > 0:
         ret = f'{ret} -e timesec {timesec} '
+    if sound is not None:
+        ret = f'{ret} -e sound {sound} '
     return ret
 
 
@@ -277,10 +286,16 @@ def get_options(argv):
     parser.add_argument(
         '--inputids', default=None)
     parser.add_argument(
-        '-t', '--timesec', type=float, default=10.0)
+        '-t', '--timesec', type=float, default=-1)
     parser.add_argument(
         '--extended', action='store_true',
         help='Extended version of the function',)
+    parser.add_argument(
+        '--sound', type=str,
+        default=None,
+        choices=list(SOUNDS),
+        help='|'.join(key + ':' + desc for key, desc in SOUNDS.items()))
+
     options = parser.parse_args(argv[1:])
 
     # implement help
@@ -313,7 +328,7 @@ def main(argv):
         pull_info(serial, model, options.extended, options.debug)
     if options.func == 'record':
         record(serial, model, options.audiosource, options.inputids,
-               options.timesec, options.debug)
+               options.timesec,  options.sound, options.debug)
 
 
 if __name__ == '__main__':
