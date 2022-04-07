@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     Handler handler = new Handler();
     float mRecSec = 10.0f;
-    int  mAudioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
+    int mAudioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
     int[] mDeviceIds = null;
 
     public static String[] retrieveNotGrantedPermissions(Context context) {
