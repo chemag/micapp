@@ -174,7 +174,8 @@ def pull_info(serial, name, extended, audiosource, debug=0):
             continue
         # pull the output file
         base_file_name = os.path.basename(file).strip()
-        filename = f'{os. path. splitext(base_file_name)[0]}_{name}.txt'
+        filename = '%s.%s.%s.txt' % (os.path.splitext(base_file_name)[0],
+                                     name, audiosource)
         adb_cmd = f'adb -s {serial} pull {file.strip()} {filename}'
         run_cmd(adb_cmd, debug)
         with open(filename, 'r') as fl:
