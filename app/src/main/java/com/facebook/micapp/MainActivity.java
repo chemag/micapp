@@ -261,7 +261,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "***\n*** On create\n***\n");
+        Log.d(TAG, "MainActivity::OnCreate()\n");
 
 
         // make sure the right permissions are set
