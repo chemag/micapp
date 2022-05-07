@@ -276,8 +276,8 @@ public class MainActivity extends AppCompatActivity {
         mAudioEffects = new AudioEffects();
         Bundle extras = this.getIntent().getExtras();
 
-        Log.d(TAG, "extras " + Utils.bundleToString(extras));
         if (extras != null) {
+            Log.d(TAG, "extras " + Utils.bundleToString(extras));
             setContentView(R.layout.activity_main_clean);
             mInfo = (TextView) findViewById(R.id.cleanInfo);
             if (extras.containsKey("inputid")) {
