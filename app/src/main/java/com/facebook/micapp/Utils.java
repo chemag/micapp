@@ -9,6 +9,7 @@ import android.media.AudioProfile;
 import android.media.MediaRecorder;
 import android.media.MicrophoneInfo;
 import android.media.audiofx.AudioEffect;
+import android.os.Bundle;
 import android.util.Log;
 import android.util.Pair;
 
@@ -29,6 +30,15 @@ public class Utils {
         return 20 * Math.log10(val);
     }
 
+    public static String bundleToString(Bundle bundle) {
+        StringBuilder str = new StringBuilder();
+        str.append("{ ");
+        for (String key: bundle.keySet()) {
+            str.append(key + ": \"" + bundle.getString(key) + "\" ");
+        }
+        str.append("}");
+        return str.toString();
+    }
 
     public static String freqResponse(java.util.List<android.util.Pair<Float, Float>> response) {
         StringBuilder bldr = new StringBuilder();

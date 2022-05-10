@@ -232,3 +232,8 @@ $ ./scripts/audiocmp.py capture_48kHz_*
 0,capture_48kHz_Smart_TV_Pro.builtin_mic.8.wav,-55.7,-30.09,25.61,-129.59
 1,capture_48kHz_USB-Audio_-_HD_Web_Camera.usb_device.22.wav,-3.05,0.0,3.05,-100.0
 ```
+
+# 6. Requirements
+
+Python packages:
+* [soundfile](https://pypi.org/project/SoundFile/)

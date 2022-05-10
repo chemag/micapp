@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
     Handler handler = new Handler();
     float mRecSec = 10.0f;
-    int  mAudioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
+    int mAudioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
     int[] mDeviceIds = null;
     Thread mPlaybackThread;
     boolean mPlaybackDone = false;
@@ -294,7 +294,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Log.d(TAG, "***\n*** On create\n***\n");
+        Log.d(TAG, "MainActivity::OnCreate()\n");
 
 
         // make sure the right permissions are set
@@ -310,6 +310,7 @@ public class MainActivity extends AppCompatActivity {
         Bundle extras = this.getIntent().getExtras();
 
         if (extras != null) {
+            Log.d(TAG, "extras " + Utils.bundleToString(extras));
             setContentView(R.layout.activity_main_clean);
             mInfo = (TextView) findViewById(R.id.cleanInfo);
             if (extras.containsKey("inputid")) {
