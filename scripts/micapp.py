@@ -19,6 +19,7 @@ FUNC_CHOICES = {
     'help': 'show help options',
     'info': 'provide audio uplink',
     'record': 'record an audioclip',
+    'play': 'play a sound',
 }
 
 AUDIO_SOURCE_CHOICES = {
@@ -185,7 +186,6 @@ def pull_info(serial, name, extended, audiosource, debug=0):
         print('\n__________________\n')
         print(f'Data also available in {filename}')
 
-
 def record(serial, name, audiosource=None, ids=None, timesec=10.0,
            playsound=None, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
@@ -240,6 +240,20 @@ def record(serial, name, audiosource=None, ids=None, timesec=10.0,
 
     for name in audiofiles:
         print(f'{name}')
+
+        record(serial, options.sound, options.timesec, options.stop, options.debug)
+
+def play(serial, timesec=10.0, playsound=None, stopapp=False, debug=0):
+    if stopapp:
+        adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
+        ret, stdout, stderr = run_cmd(adb_cmd, debug)
+        return
+
+
+    adb_cmd = (f'adb -s {serial} shell  am start -e play 1 '
+               f'{build_args(None, None, timesec, playsound)} '
+               f'-n {APPNAME_MAIN}/.MainActivity')
+    ret, stdout, stderr = run_cmd(adb_cmd, debug)
 
 
 def build_args(audiosource, inputids, timesec, sound):
@@ -298,6 +312,7 @@ def get_options(argv):
         default=None,
         choices=list(SOUNDS),
         help='|'.join(key + ':' + desc for key, desc in SOUNDS.items()))
+    parser.add_argument('--stop', action='store_true')
 
     options = parser.parse_args(argv[1:])
 
@@ -333,6 +348,8 @@ def main(argv):
     if options.func == 'record':
         record(serial, model, options.audiosource, options.inputids,
                options.timesec,  options.sound, options.debug)
+    if options.func == 'play':
+        play(serial, options.timesec, options.sound, options.stop, options.debug)
 
 
 if __name__ == '__main__':

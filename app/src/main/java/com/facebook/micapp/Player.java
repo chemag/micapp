@@ -17,6 +17,8 @@ public class Player {
     AudioTrack mPlayer = null;
     byte[] mSound = null;
     Context mContext;
+    private boolean mIsPlaying = false;
+
     public Player(Context context) {
         mContext = context;
     }
@@ -64,6 +66,7 @@ public class Player {
                 setPreferredDevice();
 
                 int played = 0;
+                mIsPlaying = true;
                 player.play();
 
                 int contentType = -1;
@@ -88,14 +91,17 @@ public class Player {
                         break;
                     }
                 }
-
-
+                mIsPlaying = false;
                 player.release();
             }
         });
         t.start();
 
 
+    }
+
+    public boolean isPlaying() {
+      return  mIsPlaying;
     }
 
     private void setPreferredDevice() {
