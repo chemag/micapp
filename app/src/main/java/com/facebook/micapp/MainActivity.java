@@ -63,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     float mRecSec = 10.0f;
     int  mAudioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
     int[] mDeviceIds = null;
+    Thread mPlaybackThread;
+    boolean mPlaybackDone = false;
 
     public static String[] retrieveNotGrantedPermissions(Context context) {
         ArrayList<String> nonGrantedPerms = new ArrayList<>();
@@ -234,6 +236,37 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void stopAudioPlayback() {
+        if (mPlaybackThread != null) {
+            mPlaybackDone = true;
+        }
+    }
+
+    public void playback(float timeSec, int soundId) {
+        mPlaybackThread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                long startTime = System.currentTimeMillis();
+                long stopTime = (long) (timeSec * 1000.0);
+                while (!mPlaybackDone) {
+                    mAudioPlayer.playSound(soundId, AudioAttributes.USAGE_MEDIA, AudioAttributes.CONTENT_TYPE_MUSIC);
+                    do {
+                        try {
+                            Thread.sleep(500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    } while(mAudioPlayer.isPlaying());
+                    long playtime = System.currentTimeMillis() - startTime;
+                    if (timeSec > 0 && stopTime < playtime) {
+                        break;
+                    }
+                }
+                System.exit(0);
+            }
+        });
+        mPlaybackThread.start();
+    }
     public void record(int audioSource, int[] inputIds, float secs) {
         mInfo.append("Start record");
         mInfo.append("\nAudio source: " + audioSource + " seconds: " + secs);
@@ -321,13 +354,7 @@ public class MainActivity extends AppCompatActivity {
                             if (extras.containsKey("timesec")) {
                                 mRecSec = Float.valueOf(extras.getString("timesec"));
                             }
-                            String sound = extras.getString("sound");
-                            int id = R.raw.voices_48khz_s16pcm;
-                            if (sound.toLowerCase().equals("noise")) {
-                                id = R.raw.noise_48k_300ms;
-                            } else if (sound.toLowerCase().equals("chirp")) {
-                                id = R.raw.chirp_48k_300ms;
-                            }
+                            int id = getAudioId(extras);
                             Log.d(TAG, "Call rec and play: sleep = " + mRecSec);
                             recordAndPlayback(mAudioSource, mDeviceIds, id, mRecSec);
                             Log.d(TAG, "Exit");
@@ -340,6 +367,16 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 t.start();
+            } else if (extras.containsKey("play")) {
+                int id = getAudioId(extras);
+                if (extras.containsKey("timesec")) {
+                    playback(Float.valueOf(extras.getString("timesec")), id);
+                } else if (extras.containsKey("stop")) {
+                    stopAudioPlayback();
+                } else {
+                    playback(-1, id);
+                }
+                
             }
 
             return;
@@ -460,6 +497,17 @@ public class MainActivity extends AppCompatActivity {
         // start the thread
         Log.d(TAG, "Start check!");
         new Thread(checkTask).start();
+    }
+
+    private int getAudioId(Bundle extras) {
+        String sound = extras.getString("sound", "chirp");
+        int id = R.raw.voices_48khz_s16pcm;
+        if (sound.toLowerCase().equals("noise")) {
+            id = R.raw.noise_48k_300ms;
+        } else if (sound.toLowerCase().equals("chirp")) {
+            id = R.raw.chirp_48k_300ms;
+        }
+        return id;
     }
 
     @Override
