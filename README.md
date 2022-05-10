@@ -233,7 +233,27 @@ $ ./scripts/audiocmp.py capture_48kHz_*
 1,capture_48kHz_USB-Audio_-_HD_Web_Camera.usb_device.22.wav,-3.05,0.0,3.05,-100.0
 ```
 
-# 6. Requirements
+
+# 6. Operation: Playout
+
+`micapp` provides a playout mechanism that provides an audio source.
+
+Start the playout. Note that you can select the exact audio file between
+a human voice ("`voice`"), pink noise ("`noise`"), and a chirp
+("`chirp`").
+
+```
+$ ./scripts/micapp.py play --sound voice
+```
+
+Stop the playout.
+
+```
+$ ./scripts/micapp.py play --stop
+```
+
+
+# 7. Requirements
 
 Python packages:
 * [soundfile](https://pypi.org/project/SoundFile/)
