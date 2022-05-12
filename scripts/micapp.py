@@ -7,6 +7,7 @@ import sys
 import time
 import soundfile as sf
 import re
+import threading
 
 from _version import __version__
 
@@ -93,7 +94,8 @@ def get_device_info(serial_inp, debug=0):
             'error: need to choose a device %r' % list(device_info.keys()))
         serial = list(device_info.keys())[0]
         model = device_info[serial]
-
+    elif serial_inp == 'all':
+        return device_info
     else:
         # if user forced a serial number, make sure it is available
         assert serial_inp in device_info, (
@@ -327,14 +329,16 @@ def get_options(argv):
     return options
 
 
-def main(argv):
-    options = get_options(argv)
-    if options.version:
-        print('version: %s' % __version__)
-        sys.exit(0)
+def getModelName(info):
+    if type(info) is dict:
+        if 'model' in info:
+            model = info.get('model')
+        else:
+            model = list(info.values())[0]
+    return model
 
-    # get model and serial number
-    model, serial = get_device_info(options.serial, False)
+
+def run_command(options, model, serial):
     if type(model) is dict:
         if 'model' in model:
             model = model.get('model')
@@ -351,6 +355,32 @@ def main(argv):
         play(serial, options.timesec, options.sound, options.stop,
              options.debug)
 
+
+def main(argv):
+    options = get_options(argv)
+    if options.version:
+        print('version: %s' % __version__)
+        sys.exit(0)
+
+    if options.serial == 'all':
+        threads = []
+        devices = get_device_info(options.serial, False)
+        serials = list(devices.keys())
+        for serial in serials:
+            model = getModelName(devices[serial])
+            print(f'{model}')
+            t = threading.Thread(target=run_command, args=(options,model,serial,))
+            threads.append(t)
+            t.start()
+        for thread in threads:
+            thread.join()
+
+    else:
+        # get model and serial number
+        info, serial = get_device_info(options.serial, False)
+        model = getModelName(info)
+
+        run_command(options, model, serial)
 
 if __name__ == '__main__':
     main(sys.argv)
