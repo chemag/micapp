@@ -203,7 +203,7 @@ public class MainActivity extends AppCompatActivity {
         // With extened testing take default settings or cli settings and setup te routing
         // verifying availability of hw effects
         Log.d(TAG, "Call rec");
-        record(mAudioSource, mDeviceIds, sampleRate, 0);
+        record(mAudioSource, mDeviceIds, sampleRate,0);
         try {
             Thread.sleep((long)(1000));
         } catch (InterruptedException e) {
@@ -388,7 +388,7 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     playback(-1, id);
                 }
-                
+
             }
 
             return;
