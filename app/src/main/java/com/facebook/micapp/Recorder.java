@@ -42,7 +42,7 @@ public class Recorder {
         mContext = context;
     }
 
-    int checkAndRecord(int audioInputSource, String inputDevice, boolean record) {
+    int checkAndRecord(int audioInputSource, String inputDevice, int sampleRate, boolean record) {
         resetSpl();
         mIsRunning = true;
         mRecordThread = new Thread(new Runnable() {
@@ -59,10 +59,10 @@ public class Recorder {
                             .setAudioSource(audioInputSource)
                             .setAudioFormat(new AudioFormat.Builder()
                                     .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
-                                    .setSampleRate(48000)
+                                    .setSampleRate(sampleRate)
                                     .setChannelMask(AudioFormat.CHANNEL_IN_MONO)
                                     .build())
-                            .setBufferSizeInBytes(2 * AudioRecord.getMinBufferSize(480000, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT))
+                            .setBufferSizeInBytes(2 * AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_MONO, AudioFormat.ENCODING_PCM_16BIT))
                             .build();
                 } catch(Exception ex) {
                     Log.e(TAG, "Failed to create recorder: " + ex.getMessage());
@@ -78,8 +78,7 @@ public class Recorder {
                     routed_ok = Utils.getMatchingAudioDeviceInfo(inputDevice, mContext);
                     recorder.setPreferredDevice(routed_ok);
                 }
-                float sampleRate = 48000;
-                int bufferSize = (int)sampleRate;
+                int bufferSize = sampleRate;
                 final byte audioData[] = new byte[(int) (bufferSize * 2)];
                 short[] shorts = new short[(int) bufferSize];
 
