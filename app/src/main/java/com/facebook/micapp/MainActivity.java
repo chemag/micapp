@@ -112,8 +112,9 @@ public class MainActivity extends AppCompatActivity {
 
             if (extendedTesting) {
                 int audioSessionId = -1;
-                // With extened testing take default settings or cli settings and setup te routing
-                // verifying availability of hw effects
+                // For extended testing, we use default settings and/or cli
+                // settings, and setup routing verifying availability of
+                // hw effects
                 Log.d(TAG, "Call rec");
                 record(mAudioSource, mDeviceIds, mSampleRate, 0);
                 try {
@@ -196,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
         // With extened testing take default settings or cli settings and setup te routing
         // verifying availability of hw effects
         Log.d(TAG, "Call rec");
-        record(mAudioSource, mDeviceIds, sampleRate,0);
+        record(mAudioSource, mDeviceIds, sampleRate, 0);
         try {
             Thread.sleep((long)(1000));
         } catch (InterruptedException e) {
