@@ -13,10 +13,7 @@ For running encapp:
 
 Install the app:
 ```
-$ ./gradlew installDebug
-...
-BUILD SUCCESSFUL in 2s
-27 actionable tasks: 1 executed, 26 up-to-date
+$ ./scripts/micapp.py install
 ```
 
 Check the app has been installed:
@@ -191,7 +188,7 @@ capture from both `audio_device_info.id` 8 and 22.
 ```
 $ ./scripts/micapp.py record --inputids 8,22  -t 5
 ...
-$ ls capture*
+$ ls capture\*
 capture_48kHz_.name.builtin_mic.8.wav
 capture_48kHz_USB-Audio_-_HD_Web_Camera.usb_device.22.wav
 ```
@@ -262,7 +259,26 @@ $ ./scripts/micapp.py play --stop
 ```
 
 
-# 7. Requirements
+# 7. Operation: Build the App from Source
+
+Build the app:
+```
+$ ./gradlew build
+...
+BUILD SUCCESSFUL in 18s
+61 actionable tasks: 36 executed, 25 up-to-date
+```
+
+
+Build and install the app:
+```
+$ ./gradlew installDebug
+...
+BUILD SUCCESSFUL in 2s
+27 actionable tasks: 1 executed, 26 up-to-date
+```
+
+# 8. Requirements
 
 Python packages:
 * [soundfile](https://pypi.org/project/SoundFile/)

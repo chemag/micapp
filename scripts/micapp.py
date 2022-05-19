@@ -14,10 +14,16 @@ from _version import __version__
 
 APPNAME_MAIN = 'com.facebook.micapp'
 DUT_FILE_PATH = '/storage/emulated/0/Android/data/com.facebook.micapp/files/'
+SCRIPT_PATH = os.path.realpath(__file__)
+SCRIPT_DIR, _ = os.path.split(SCRIPT_PATH)
+APK_DIR = os.path.join(SCRIPT_DIR, '../app/releases')
+APK_NAME_MAIN = f'{APPNAME_MAIN}-v{__version__}-debug.apk'
+APK_MAIN = os.path.join(APK_DIR, APK_NAME_MAIN)
 
 
 FUNC_CHOICES = {
     'help': 'show help options',
+    'install': 'install apk',
     'info': 'provide audio uplink',
     'record': 'record an audioclip',
     'play': 'play a sound',
@@ -274,6 +280,10 @@ def build_args(audiosource, inputids, timesec, sound):
     return ret
 
 
+def install_app(serial, debug=0):
+    run_cmd(f'adb -s {serial} install -g {APK_MAIN}', debug)
+
+
 def get_options(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -350,7 +360,9 @@ def run_command(options, model, serial):
         else:
             model = list(model.values())[0]
 
-    if options.func == 'info':
+    if options.func == 'install':
+        install_app(serial, options.debug)
+    elif options.func == 'info':
         pull_info(serial, model, options.extended, options.audiosource,
                   options.samplerate, options.debug)
     if options.func == 'record':
