@@ -201,7 +201,7 @@ def pull_info(serial, name, extended, audiosource, inputids,
         print(f'Data also available in {filename}')
 
 
-def record(serial, name, audiosource=None, samplerate=48000, ids=None,
+def record(serial, name, audiosource=None, ids=None, samplerate=48000,
            timesec=10.0, playsound=None, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
@@ -411,8 +411,8 @@ def run_command(options, model, serial):
         pull_info(serial, model, options.extended, options.audiosource,
                   options.inputids, options.samplerate, options.debug)
     elif options.func == 'record':
-        record(serial, model, options.audiosource, options.samplerate,
-               options.inputids, options.timesec,  options.sound,
+        record(serial, model, options.audiosource, options.inputids,
+               options.samplerate, options.timesec,  options.sound,
                options.debug)
     elif options.func == 'play':
         play(serial, options.timesec, options.sound, options.stop,
