@@ -130,8 +130,12 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     for (AudioRecordingConfiguration config : audio_record_configs) {
                         writer.write("effects_operation {\n");
-                        // print info about AudioSource
-                        writer.write("  audio_source: " + Utils.audioSourceToString(mAudioSource) + "\n");
+                        // print info about record settings
+                        writer.write("  record {\n");
+                        writer.write("    audio_source: " + Utils.audioSourceToString(mAudioSource) + "\n");
+                        writer.write("    device_id: " + mDeviceIds + "\n");
+                        writer.write("    sample_rate: " + mSampleRate + "\n");
+                        writer.write("  }\n");
                         // print info about AudioDeviceInfo
                         AudioDeviceInfo audio_device_info = config.getAudioDevice();
                         writer.write(Utils.getAudioDeviceInfo(audio_device_info, 1));
