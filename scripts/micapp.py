@@ -24,6 +24,7 @@ APK_MAIN = os.path.join(APK_DIR, APK_NAME_MAIN)
 FUNC_CHOICES = {
     'help': 'show help options',
     'install': 'install apk',
+    'uninstall': 'uninstall apk',
     'info': 'provide audio uplink',
     'record': 'record an audioclip',
     'play': 'play a sound',
@@ -284,6 +285,32 @@ def install_app(serial, debug=0):
     run_cmd(f'adb -s {serial} install -g {APK_MAIN}', debug)
 
 
+def uninstall_app(serial, debug=0):
+    package_list = installed_apps(serial, debug)
+    if APPNAME_MAIN in package_list:
+        run_cmd(f'adb -s {serial} uninstall {APPNAME_MAIN}', debug)
+    else:
+        print(f'warning: {APPNAME_MAIN} not installed')
+
+
+def parse_pm_list_packages(stdout):
+    package_list = []
+    for line in stdout.split('\n'):
+        # ignore blank lines
+        if not line:
+            continue
+        if line.startswith('package:'):
+            package_list.append(line[len('package:'):])
+    return package_list
+
+
+def installed_apps(serial, debug=0):
+    ret, stdout, stderr = run_cmd(f'adb -s {serial} shell pm list packages',
+                                  debug)
+    assert ret, 'error: failed to get installed app list'
+    return parse_pm_list_packages(stdout)
+
+
 def get_options(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -362,14 +389,16 @@ def run_command(options, model, serial):
 
     if options.func == 'install':
         install_app(serial, options.debug)
+    elif options.func == 'uninstall':
+        uninstall_app(serial, options.debug)
     elif options.func == 'info':
         pull_info(serial, model, options.extended, options.audiosource,
                   options.samplerate, options.debug)
-    if options.func == 'record':
+    elif options.func == 'record':
         record(serial, model, options.audiosource, options.inputids,
                options.samplerate, options.timesec,  options.sound,
                options.debug)
-    if options.func == 'play':
+    elif options.func == 'play':
         play(serial, options.timesec, options.sound, options.stop,
              options.debug)
 
