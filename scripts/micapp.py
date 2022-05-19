@@ -47,6 +47,7 @@ AUDIO_SOURCE_CHOICES = {
 default_values = {
     'debug': 0,
     'func': 'help',
+    'samplerate': 48000,
     'audiosource': None,
 }
 
@@ -190,8 +191,8 @@ def pull_info(serial, name, extended, audiosource, samplerate, debug=0):
         print(f'Data also available in {filename}')
 
 
-def record(serial, name, audiosource=None, samplrerate=48000, ids=None, timesec=10.0,
-           playsound=None, debug=0):
+def record(serial, name, audiosource=None, samplerate=48000, ids=None,
+           timesec=10.0, playsound=None, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
@@ -317,8 +318,8 @@ def get_options(argv):
         help='|'.join(key + ':' + desc for key, desc in SOUNDS.items()))
     parser.add_argument('--stop', action='store_true')
     parser.add_argument(
-        '--samplerate', '-r', default=48000,
-         help='Sets sample rate for recording',)
+        '--samplerate', '-r', default=default_values['samplerate'],
+        help='Sets sample rate for recording',)
     options = parser.parse_args(argv[1:])
 
     # implement help
@@ -354,7 +355,8 @@ def run_command(options, model, serial):
                   options.samplerate, options.debug)
     if options.func == 'record':
         record(serial, model, options.audiosource, options.inputids,
-               options.samplerate, options.timesec,  options.sound, options.debug)
+               options.samplerate, options.timesec,  options.sound,
+               options.debug)
     if options.func == 'play':
         play(serial, options.timesec, options.sound, options.stop,
              options.debug)
@@ -373,7 +375,8 @@ def main(argv):
         for serial in serials:
             model = getModelName(devices[serial])
             print(f'{model}')
-            t = threading.Thread(target=run_command, args=(options,model,serial,))
+            t = threading.Thread(target=run_command,
+                                 args=(options, model, serial))
             threads.append(t)
             t.start()
         for thread in threads:
@@ -385,6 +388,7 @@ def main(argv):
         model = getModelName(info)
 
         run_command(options, model, serial)
+
 
 if __name__ == '__main__':
     main(sys.argv)
