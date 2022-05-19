@@ -148,7 +148,7 @@ def wait_for_exit(serial, debug=0):
             current = -1
 
 
-def pull_info(serial, name, extended, audiosource, debug=0):
+def pull_info(serial, name, extended, audiosource, samplerate, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
@@ -160,7 +160,8 @@ def pull_info(serial, name, extended, audiosource, debug=0):
     if audiosource is not None:
         audiosource_int = AUDIO_SOURCE_CHOICES[audiosource][0]
         extra += f'-e audiosource {audiosource_int} '
-    adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 {extra}'
+    adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 {extra} '
+               f'-e sr {samplerate} '
                f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     wait_for_exit(serial, debug)
@@ -189,7 +190,7 @@ def pull_info(serial, name, extended, audiosource, debug=0):
         print(f'Data also available in {filename}')
 
 
-def record(serial, name, audiosource=None, ids=None, timesec=10.0,
+def record(serial, name, audiosource=None, samplrerate=48000, ids=None, timesec=10.0,
            playsound=None, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
@@ -197,6 +198,7 @@ def record(serial, name, audiosource=None, ids=None, timesec=10.0,
     adb_cmd = f'adb -s {serial} shell rm {DUT_FILE_PATH}*.raw'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     adb_cmd = (f'adb -s {serial} shell  am start -e rec 1 '
+               f'-e sr {samplerate} '
                f'{build_args(audiosource, ids, timesec, playsound)} '
                f'-n {APPNAME_MAIN}/.MainActivity')
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
@@ -314,7 +316,9 @@ def get_options(argv):
         choices=list(SOUNDS),
         help='|'.join(key + ':' + desc for key, desc in SOUNDS.items()))
     parser.add_argument('--stop', action='store_true')
-
+    parser.add_argument(
+        '--samplerate', '-r', default=48000,
+         help='Sets sample rate for recording',)
     options = parser.parse_args(argv[1:])
 
     # implement help
@@ -347,10 +351,10 @@ def run_command(options, model, serial):
 
     if options.func == 'info':
         pull_info(serial, model, options.extended, options.audiosource,
-                  options.debug)
+                  options.samplerate, options.debug)
     if options.func == 'record':
         record(serial, model, options.audiosource, options.inputids,
-               options.timesec,  options.sound, options.debug)
+               options.samplerate, options.timesec,  options.sound, options.debug)
     if options.func == 'play':
         play(serial, options.timesec, options.sound, options.stop,
              options.debug)

@@ -179,6 +179,8 @@ effects_operation {
 }
 ```
 
+The extended option will start a recording and try to modify the effects. The samplerate option
+works here too.
 
 # 4. Operation: Mic Recording
 
@@ -198,6 +200,13 @@ You can also choose the default mic for a given `AudioSource`.
 
 ```
 $ ./scripts/micapp.py -dd record --audiosource VOICE_CALL -t 2
+...
+```
+
+Samplerate can be set.
+
+```
+$ ./scripts/micapp.py -dd record --audiosource VOICE_CALL -t 2 -r 16000
 ...
 ```
 

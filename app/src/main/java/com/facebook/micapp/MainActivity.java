@@ -63,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
     float mRecSec = 10.0f;
     int mAudioSource = MediaRecorder.AudioSource.VOICE_COMMUNICATION;
     int[] mDeviceIds = null;
+    int mSampleRate = 48000;
     Thread mPlaybackThread;
     boolean mPlaybackDone = false;
 
@@ -114,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                 // With extened testing take default settings or cli settings and setup te routing
                 // verifying availability of hw effects
                 Log.d(TAG, "Call rec");
-                record(mAudioSource, mDeviceIds, 0);
+                record(mAudioSource, mDeviceIds, mSampleRate, 0);
                 try {
                     Thread.sleep((long)(1000));
                 } catch (InterruptedException e) {
@@ -190,12 +191,12 @@ public class MainActivity extends AppCompatActivity {
        2) playback a sound
        3) close record
      */
-    public void recordAndPlayback(int audioSource, int[] inputIds, int soundId, float secs) {
+    public void recordAndPlayback(int audioSource, int[] inputIds, int sampleRate, int soundId, float secs) {
         int audioSessionId = -1;
         // With extened testing take default settings or cli settings and setup te routing
         // verifying availability of hw effects
         Log.d(TAG, "Call rec");
-        record(mAudioSource, mDeviceIds, 0);
+        record(mAudioSource, mDeviceIds, sampleRate,0);
         try {
             Thread.sleep((long)(1000));
         } catch (InterruptedException e) {
@@ -267,7 +268,7 @@ public class MainActivity extends AppCompatActivity {
         });
         mPlaybackThread.start();
     }
-    public void record(int audioSource, int[] inputIds, float secs) {
+    public void record(int audioSource, int[] inputIds, int sampleRate, float secs) {
         mInfo.append("Start record");
         mInfo.append("\nAudio source: " + audioSource + " seconds: " + secs);
         Vector<String> inputs = Utils.lookupIdsStrings(inputIds, this);
@@ -276,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Start a new recorder:" + input);
             final Recorder rec = new Recorder(this);
             recorders.add(rec);
-            (new Thread(() -> rec.checkAndRecord(audioSource, input, true))).start();
+            (new Thread(() -> rec.checkAndRecord(audioSource, input, sampleRate, true))).start();
         }
 
         if (secs > 0) {
@@ -325,6 +326,9 @@ public class MainActivity extends AppCompatActivity {
                 mAudioSource = Integer.valueOf(extras.getString("audiosource"));
             }
 
+            if (extras.containsKey("sr")) {
+                mSampleRate = Integer.parseInt(extras.getString("sr"));
+            }
 
             if (extras.containsKey("timesec")) {
                 mRecSec = Float.valueOf(extras.getString("timesec"));
@@ -357,11 +361,11 @@ public class MainActivity extends AppCompatActivity {
                             }
                             int id = getAudioId(extras);
                             Log.d(TAG, "Call rec and play: sleep = " + mRecSec);
-                            recordAndPlayback(mAudioSource, mDeviceIds, id, mRecSec);
+                            recordAndPlayback(mAudioSource, mDeviceIds, mSampleRate, id, mRecSec);
                             Log.d(TAG, "Exit");
                             System.exit(0);
                         } else {
-                            record(mAudioSource, mDeviceIds, mRecSec);
+                            record(mAudioSource, mDeviceIds, mSampleRate, mRecSec);
                             Log.d(TAG, "Exit");
                             System.exit(0);
                         }
@@ -588,6 +592,7 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "start recorder, record to file: " + mRecordCheck.isChecked());
             mAudioSession = mAudioRecorder.checkAndRecord(mAudioSourceSpinner.getSelectedItemPosition(),
                                                           mInputSpinner.getSelectedItem().toString(),
+                                                          mSampleRate,
                                                           mRecordCheck.isChecked());
             Log.d(TAG, "check effecs: "+mAudioSession);
             if (mAudioSession > 0) {
