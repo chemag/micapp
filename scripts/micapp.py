@@ -281,6 +281,13 @@ def build_args(audiosource, inputids, timesec, sound):
     return ret
 
 
+def install_ok(serial, debug=0):
+    package_list = installed_apps(serial, debug)
+    if APPNAME_MAIN not in package_list:
+        return False
+    return True
+
+
 def install_app(serial, debug=0):
     run_cmd(f'adb -s {serial} install -g {APK_MAIN}', debug)
 
@@ -389,8 +396,14 @@ def run_command(options, model, serial):
 
     if options.func == 'install':
         install_app(serial, options.debug)
-    elif options.func == 'uninstall':
+
+    # ensure the app is correctly installed
+    assert install_ok(serial, options.debug), (
+        'App not installed in %s' % serial)
+
+    if options.func == 'uninstall':
         uninstall_app(serial, options.debug)
+
     elif options.func == 'info':
         pull_info(serial, model, options.extended, options.audiosource,
                   options.samplerate, options.debug)
