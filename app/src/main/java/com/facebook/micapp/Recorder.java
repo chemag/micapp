@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 import androidx.core.app.ActivityCompat;
@@ -72,7 +73,7 @@ public class Recorder {
                 }
                 final AudioRecord recorder = tmprec;
                 AudioDeviceInfo routed_ok = null;
-                if (!inputDevice.toLowerCase().equals("default")) {
+                if (!inputDevice.toLowerCase(Locale.ROOT).equals("default")) {
                     Log.d(TAG, "\n\n--------------- Check Audio ---------------------");
                     Log.d(TAG, "Look for "+inputDevice);
                     routed_ok = Utils.getMatchingAudioDeviceInfo(inputDevice, mContext);

@@ -15,6 +15,7 @@ import android.util.Pair;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 public class Utils {
@@ -43,7 +44,7 @@ public class Utils {
     public static String freqResponse(java.util.List<android.util.Pair<Float, Float>> response) {
         StringBuilder bldr = new StringBuilder();
         for (Pair<Float, Float> pair : response) {
-            bldr.append(String.format("%d Hz %.2f\n dB", (int) (pair.first.floatValue()), pair.second.doubleValue()));
+            bldr.append(String.format(Locale.ROOT, "%d Hz %.2f\n dB", (int) (pair.first.floatValue()), pair.second.doubleValue()));
         }
 
         return bldr.toString();
@@ -485,8 +486,8 @@ public class Utils {
                 List<Pair<Float, Float>> frequency_responses = microphone_info.getFrequencyResponse();
                 for (Pair<Float, Float> frequency_response: frequency_responses) {
                     str.append("      frequency_response {\n");
-                    str.append(String.format("        frequency_hz: %5.0f\n", frequency_response.first));
-                    str.append(String.format("        response_db: %5.1f\n", frequency_response.second));
+                    str.append(String.format(Locale.ROOT, "        frequency_hz: %5.0f\n", frequency_response.first));
+                    str.append(String.format(Locale.ROOT, "        response_db: %5.1f\n", frequency_response.second));
                     str.append("      }\n");
                 }
                 str.append("    }\n");

@@ -36,6 +36,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Vector;
 
 public class MainActivity extends AppCompatActivity {
@@ -512,9 +513,9 @@ public class MainActivity extends AppCompatActivity {
     private int getAudioId(Bundle extras) {
         String sound = extras.getString("sound", "chirp");
         int id = R.raw.voices_48khz_s16pcm;
-        if (sound.toLowerCase().equals("noise")) {
+        if (sound.toLowerCase(Locale.ROOT).equals("noise")) {
             id = R.raw.noise_48k_300ms;
-        } else if (sound.toLowerCase().equals("chirp")) {
+        } else if (sound.toLowerCase(Locale.ROOT).equals("chirp")) {
             id = R.raw.chirp_48k_300ms;
         }
         return id;
@@ -586,7 +587,7 @@ public class MainActivity extends AppCompatActivity {
                         runOnUiThread(new Runnable() {
                             @Override
                             public void run() {
-                                String text = String.format("Peak %4d dB (%4d dB / %4d dB)\nRMS %4d dB (%4d dB / %4d dB)",
+                                String text = String.format(Locale.ROOT, "Peak %4d dB (%4d dB / %4d dB)\nRMS %4d dB (%4d dB / %4d dB)",
                                         (int)currentPeak, (int)maxPeak, (int)minPeak, (int)currentRMS, (int)maxRMS, (int)minRMS);
                                 mSpltText.setText(text);
                             }
