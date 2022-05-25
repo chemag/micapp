@@ -282,3 +282,8 @@ BUILD SUCCESSFUL in 2s
 
 Python packages:
 * [soundfile](https://pypi.org/project/SoundFile/)
+
+
+# 9. License
+
+micapp is BSD licensed, as found in the [LICENSE](LICENSE) file.
