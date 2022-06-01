@@ -99,7 +99,7 @@ public class Recorder {
                     String id = Utils.clean(info.getProductName().toString() + "." +
                                                   Utils.audioDeviceTypeToString( info.getType())+ "." +
                                                   info.getId());
-                    filename = primaryExternalStorage + "/capture_48kHz_" + id + ".raw";
+                    filename = primaryExternalStorage + "/capture_" + sampleRate + "Hz_" + id + ".raw";
                     Log.d(TAG, "Record to \"" + filename + "\"");
                     try {
                         os = new BufferedOutputStream(new FileOutputStream(filename));
