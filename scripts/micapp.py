@@ -411,8 +411,8 @@ def run_command(options, model, serial):
         pull_info(serial, model, options.extended, options.audiosource,
                   options.inputids, options.samplerate, options.debug)
     elif options.func == 'record':
-        record(serial, model, options.audiosource, options.inputids,
-               options.samplerate, options.timesec,  options.sound,
+        record(serial, model, options.audiosource, options.samplerate,
+               options.inputids, options.timesec,  options.sound,
                options.debug)
     elif options.func == 'play':
         play(serial, options.timesec, options.sound, options.stop,
