@@ -156,7 +156,8 @@ def wait_for_exit(serial, debug=0):
             current = -1
 
 
-def pull_info(serial, name, extended, audiosource, samplerate, debug=0):
+def pull_info(serial, name, extended, audiosource, inputids,
+              samplerate, debug=0):
     adb_cmd = f'adb -s {serial} shell am force-stop {APPNAME_MAIN}'
     ret, stdout, stderr = run_cmd(adb_cmd, debug)
     # clean out old files
@@ -168,6 +169,8 @@ def pull_info(serial, name, extended, audiosource, samplerate, debug=0):
     if audiosource is not None:
         audiosource_int = AUDIO_SOURCE_CHOICES[audiosource][0]
         extra += f'-e audiosource {audiosource_int} '
+    if inputids is not None:
+        extra += f'-e inputid {inputids} '
     adb_cmd = (f'adb -s {serial} shell am start -e nogui 1 {extra} '
                f'-e sr {samplerate} '
                f'-n {APPNAME_MAIN}/.MainActivity')
@@ -406,7 +409,7 @@ def run_command(options, model, serial):
 
     elif options.func == 'info':
         pull_info(serial, model, options.extended, options.audiosource,
-                  options.samplerate, options.debug)
+                  options.inputids, options.samplerate, options.debug)
     elif options.func == 'record':
         record(serial, model, options.audiosource, options.inputids,
                options.samplerate, options.timesec,  options.sound,
