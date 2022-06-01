@@ -34,6 +34,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -134,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
                         // print info about record settings
                         writer.write("  record {\n");
                         writer.write("    audio_source: " + Utils.audioSourceToString(mAudioSource) + "\n");
-                        writer.write("    device_id: " + mDeviceIds + "\n");
+                        writer.write("    device_id: " + Arrays.toString(mDeviceIds) + "\n");
                         writer.write("    sample_rate: " + mSampleRate + "\n");
                         writer.write("  }\n");
                         // print info about AudioDeviceInfo
